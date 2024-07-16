@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace FinanceProject.DataAccesLayer.Abstract
 {
-    public interface IGenericDal<T> where T:class
+    public interface IGenericDal<T> where T : class
     {
-        void Insert(T entity);
+        Task InsertAsync(T entity);
 
-        void Update(T entity);
+        Task UpdateAsync(T entity);
 
-        void Delete(int id);
+        Task DeleteAsync(int id);
 
-        T GetById(int id);
+        Task<T> GetByIdAsync(int id);
 
-        List<T> GetAll();
+        Task<List<T>> GetAllAsync();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using FinanceProject.BusinessLayer.Abstract;
+using FinanceProject.DtoLayer.Dtos.UserDto;
 using FinanceProject.EntityLayer.Concreate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +11,12 @@ namespace FinanceProject.WebApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IAccountService _accountService;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, IAccountService accountService)
         {
             _userService = userService;
+            _accountService = accountService;
         }
 
         [HttpGet]
@@ -51,6 +54,31 @@ namespace FinanceProject.WebApi.Controllers
         {
             var value = _userService.TGetById(id);
             return Ok(value);
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(UserRegisterDto userRegisterDto)
+        {
+            await _userService.TRegister(userRegisterDto);
+
+            return Ok();
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(UserLoginDto userLoginDto)
+        {
+            var user = await _userService.TLogin(userLoginDto);
+            if (user == null) return Unauthorized();
+
+            // Kullanıcı bilgilerini döndür
+            return Ok(new
+            {
+                user.ID,
+                user.Email,
+                user.FullName,
+                user.Phone,
+                user.Role
+            });
         }
 
     }

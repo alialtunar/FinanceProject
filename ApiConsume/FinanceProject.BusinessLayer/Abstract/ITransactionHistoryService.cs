@@ -9,5 +9,7 @@ namespace FinanceProject.BusinessLayer.Abstract
 {
     public interface ITransactionHistoryService:IGenericService<TransactionHistory>
     {
+        Task Deposit(int accountId, decimal amount, string description = null);
+        Task Withdraw(int accountId, decimal amount, string description = null);
     }
 }

@@ -16,5 +16,8 @@ namespace FinanceProject.DataAccesLayer.Dapper
         public DpTransactionHistoryDal(IDbConnection connection) : base(connection)
         {
         }
+
+
+
     }
 }

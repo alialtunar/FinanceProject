@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace FinanceProject.BusinessLayer.Abstract
 {
-    public interface IGenericService<T> where T:class
+    public interface IGenericService<T> where T : class
     {
-        void TInsert(T entity);
+        Task TInsertAsync(T entity);
 
-        void TUpdate(T entity);
+        Task TUpdateAsync(T entity);
 
-        void TDelete(int id);
+        Task TDeleteAsync(int id);
 
-        T TGetById(int id);
+        Task<T> TGetByIdAsync(int id);
 
-        List<T> TGetAll();
+        Task<List<T>> TGetAllAsync();
     }
 }

@@ -3,8 +3,6 @@ using FinanceProject.DataAccesLayer.Abstract;
 using FinanceProject.EntityLayer.Concreate;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FinanceProject.BusinessLayer.Concreate
@@ -17,29 +15,63 @@ namespace FinanceProject.BusinessLayer.Concreate
         {
             _accountDal = accountDal;
         }
-        public void TDelete(int id)
+
+        public async Task TDeleteAsync(int id)
         {
-            _accountDal.Delete(id);
+            await _accountDal.DeleteAsync(id);
         }
 
-        public List<Account> TGetAll()
+        public async Task<List<Account>> TGetAllAsync()
         {
-           return _accountDal.GetAll();
+            return await _accountDal.GetAllAsync();
         }
 
-        public Account TGetById(int id)
+        public async Task<Account> TGetByIdAsync(int id)
         {
-            return _accountDal.GetById(id);
+            return await _accountDal.GetByIdAsync(id);
         }
 
-        public void TInsert(Account entity)
+        public async Task TInsertAsync(Account entity)
         {
-            _accountDal.Insert(entity);
+            await _accountDal.InsertAsync(entity);
         }
 
-        public void TUpdate(Account entity)
+        public async Task TUpdateAsync(Account entity)
         {
-           _accountDal.Update(entity);
+            await _accountDal.UpdateAsync(entity);
+        }
+
+        public async Task TInsertForUserAsync(int userId)
+        {
+            // Benzersiz hesap numarası oluşturma
+            string accountNumber = GenerateUniqueAccountNumber();
+
+            // Yeni hesap oluşturma
+            var newAccount = new Account
+            {
+                AccountNumber = accountNumber,
+                Balance = 0,
+                UserID = userId
+            };
+
+            // Hesabı veritabanına ekleme
+            await _accountDal.InsertAsync(newAccount);
+        }
+
+        private string GenerateUniqueAccountNumber()
+        {
+            // Burada benzersiz bir hesap numarası oluşturma mantığını uygulayabilirsiniz
+            // Örneğin, rastgele bir şekilde oluşturulabilir veya veritabanında mevcut
+            // olmayan bir numara oluşturulabilir.
+
+            // Örnek olarak bir rastgele numara oluşturma:
+            Random random = new Random();
+            string accountNumber = "ACC" + random.Next(100000, 999999).ToString();
+
+            // Benzersiz olup olmadığını kontrol edebilirsiniz
+            // Örneğin, _accountDal içindeki GetAllAsync() veya benzeri bir metotla kontrol edebilirsiniz
+
+            return accountNumber;
         }
     }
 }

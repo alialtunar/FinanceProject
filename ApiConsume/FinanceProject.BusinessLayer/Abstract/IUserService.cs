@@ -1,13 +1,13 @@
-﻿using FinanceProject.EntityLayer.Concreate;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using FinanceProject.DtoLayer.Dtos.UserDto;
+using FinanceProject.EntityLayer.Concreate;
 using System.Threading.Tasks;
 
 namespace FinanceProject.BusinessLayer.Abstract
 {
-    public interface IUserService:IGenericService<User>
+    public interface IUserService : IGenericService<User>
     {
+        Task TRegisterAsync(UserRegisterDto userRegisterDto);
+
+        Task<User> TLoginAsync(UserLoginDto userLoginDto);
     }
 }
