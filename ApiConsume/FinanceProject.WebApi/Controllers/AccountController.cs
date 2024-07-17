@@ -1,12 +1,11 @@
 ﻿using FinanceProject.BusinessLayer.Abstract;
 using FinanceProject.EntityLayer.Concreate;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace FinanceProject.WebApi.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
@@ -19,41 +18,38 @@ namespace FinanceProject.WebApi.Controllers
         }
 
         [HttpGet]
-        public IActionResult AccountList()
+        public async Task<IActionResult> AccountList()
         {
-            var values = _accountService.TGetAll();
+            var values = await _accountService.TGetAllAsync();
             return Ok(values);
         }
 
         [HttpPost]
-
-        public IActionResult AddAccount(Account account)
+        public async Task<IActionResult> AddAccount(Account account)
         {
-            _accountService.TInsert(account);
+            await _accountService.TInsertAsync(account);
             return Ok();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteAccount(int id)
+        public async Task<IActionResult> DeleteAccount(int id)
         {
-            var value = _accountService.TGetById(id);
-            _accountService.TDelete(value.ID);
+            await _accountService.TDeleteAsync(id);
             return Ok();
         }
 
         [HttpPut]
-        public IActionResult UpdateAccount(Account account)
+        public async Task<IActionResult> UpdateAccount(Account account)
         {
-            _accountService.TUpdate(account);
+            await _accountService.TUpdateAsync(account);
             return Ok();
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetAccount(int id)
+        public async Task<IActionResult> GetAccount(int id)
         {
-            var value = _accountService.TGetById(id);
+            var value = await _accountService.TGetByIdAsync(id);
             return Ok(value);
         }
-
     }
 }

@@ -68,6 +68,8 @@ namespace FinanceProject.DataAccesLayer.Repository
                 return "transactionhistory";
             else if (typeof(T) == typeof(Account))
                 return "accounts";
+            else if (typeof(T) == typeof(VerificationCode))
+                return "verificationcode";
 
             throw new NotSupportedException($"Type {typeof(T).Name} is not supported.");
         }

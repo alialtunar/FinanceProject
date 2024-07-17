@@ -1,8 +1,8 @@
 ﻿using FinanceProject.BusinessLayer.Abstract;
 using FinanceProject.DtoLayer.Dtos.UserDto;
 using FinanceProject.EntityLayer.Concreate;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace FinanceProject.WebApi.Controllers
 {
@@ -11,63 +11,58 @@ namespace FinanceProject.WebApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IAccountService _accountService;
 
-        public UserController(IUserService userService, IAccountService accountService)
+        public UserController(IUserService userService)
         {
             _userService = userService;
-            _accountService = accountService;
         }
 
         [HttpGet]
-        public IActionResult UserList()
+        public async Task<IActionResult> UserList()
         {
-            var values = _userService.TGetAll();
+            var values = await _userService.TGetAllAsync();
             return Ok(values);
         }
 
         [HttpPost]
-
-         public IActionResult AddUser(User user)
+        public async Task<IActionResult> AddUser(User user)
         {
-            _userService.TInsert(user);
+            await _userService.TInsertAsync(user);
             return Ok();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
-            var value = _userService.TGetById(id);
-            _userService.TDelete(value.ID);
+            await _userService.TDeleteAsync(id);
             return Ok();
         }
 
         [HttpPut]
-        public IActionResult UpdateUser(User user)
+        public async Task<IActionResult> UpdateUser(User user)
         {
-            _userService.TUpdate(user);
+            await _userService.TUpdateAsync(user);
             return Ok();
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetUser(int id)
+        public async Task<IActionResult> GetUser(int id)
         {
-            var value = _userService.TGetById(id);
+            var value = await _userService.TGetByIdAsync(id);
             return Ok(value);
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserRegisterDto userRegisterDto)
         {
-            await _userService.TRegister(userRegisterDto);
-
+            await _userService.TRegisterAsync(userRegisterDto);
             return Ok();
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserLoginDto userLoginDto)
         {
-            var user = await _userService.TLogin(userLoginDto);
+            var user = await _userService.TLoginAsync(userLoginDto);
             if (user == null) return Unauthorized();
 
             // Kullanıcı bilgilerini döndür

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.Text;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,12 +59,22 @@ builder.Services.AddCors(options =>
                .AllowAnyHeader();
     });
 });
+
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.IgnoreNullValues = true; // Örnek bir ayar
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase; // Örnek bir ayar
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUserService, UserManager>();
 builder.Services.AddScoped<IAccountService, AccountManager>();
 builder.Services.AddScoped<ITransactionHistoryService, TransactionHistoryManager>();
+builder.Services.AddScoped<IVerificationCodeService, VerificationCodeManager>();
+builder.Services.AddScoped<IEmailService, EmailManager>();
+
 builder.Services.AddScoped<JwtService>();
 
 
@@ -74,6 +85,7 @@ builder.Services.AddScoped<IDbConnection>(provider => new ConnectionHelper(provi
 builder.Services.AddScoped<IUserDal, DpUserDal>();
 builder.Services.AddScoped<IAccountDal, DpAccountDal>();
 builder.Services.AddScoped<ITransactionHistoryDal, DpTransactionHistoryDal>();
+builder.Services.AddScoped<IVerificationCodeDal, DpVerificationCodeDal>();
 
 var app = builder.Build();
 
