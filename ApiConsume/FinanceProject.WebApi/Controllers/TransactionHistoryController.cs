@@ -61,9 +61,9 @@ namespace FinanceProject.WebApi.Controllers
             return Ok(value);
         }
         [HttpPost("InitiateDeposit")]
-        public async Task<IActionResult> InitiateDeposit(int accountId, decimal amount, string description = null)
+        public async Task<IActionResult> InitiateDeposit(int accountId, decimal amount)
         {
-            var code = await _transactionHistoryService.InitiateDeposit(accountId, amount, description);
+            var code = await _transactionHistoryService.InitiateDeposit(accountId, amount);
 
             // Get user's email address from your database using accountId
             var account = await _accountService.TGetByIdAsync(accountId);
@@ -80,9 +80,9 @@ namespace FinanceProject.WebApi.Controllers
         }
 
         [HttpPost("InitiateWithdraw")]
-        public async Task<IActionResult> InitiateWithdraw(int accountId, decimal amount, string description = null)
+        public async Task<IActionResult> InitiateWithdraw(int accountId, decimal amount)
         {
-            var code = await _transactionHistoryService.InitiateWithdraw(accountId, amount, description);
+            var code = await _transactionHistoryService.InitiateWithdraw(accountId, amount);
 
             // Get user's email address from your database using accountId
             var account = await _accountService.TGetByIdAsync(accountId);
@@ -101,17 +101,31 @@ namespace FinanceProject.WebApi.Controllers
 
 
         [HttpPost("Deposit")]
-        public async Task<IActionResult> Deposit(int accountId, decimal amount, string code, string description = null)
+        public async Task<IActionResult> Deposit(int accountId, decimal amount, string code)
         {
-            await _transactionHistoryService.Deposit(accountId, amount, code, description);
+            await _transactionHistoryService.Deposit(accountId, amount, code);
             return Ok();
         }
 
         [HttpPost("Withdraw")]
-        public async Task<IActionResult> Withdraw(int accountId, decimal amount, string code, string description = null)
+        public async Task<IActionResult> Withdraw(int accountId, decimal amount, string code)
         {
-            await _transactionHistoryService.Withdraw(accountId, amount, code, description);
+            await _transactionHistoryService.Withdraw(accountId, amount, code);
             return Ok();
+        }
+
+        [HttpPost("initiate-transfer")]
+        public async Task<IActionResult> InitiateTransfer(int senderAccountId, string recipientAccountNumber, decimal amount)
+        {
+            await _transactionHistoryService.InitiateTransfer(senderAccountId, recipientAccountNumber, amount);
+            return Ok("Transfer initiated. Please verify the recipient's name.");
+        }
+
+        [HttpPost("transfer")]
+        public async Task<IActionResult> Transfer(int senderAccountId, string recipientAccountNumber, decimal amount, string recipientName, string description = null)
+        {
+            await _transactionHistoryService.Transfer(senderAccountId, recipientAccountNumber, amount, recipientName,description);
+            return Ok("Transfer successful");
         }
     }
 

@@ -12,12 +12,14 @@ namespace FinanceProject.BusinessLayer.Concreate
         private readonly ITransactionHistoryDal _transactionHistoryDal;
         private readonly IAccountService _accountService;
         private readonly IVerificationCodeService _verificationCodeService;
+        private readonly IUserService _userService;
 
-        public TransactionHistoryManager(ITransactionHistoryDal transactionHistoryDal, IAccountService accountService, IVerificationCodeService verificationCodeService)
+        public TransactionHistoryManager(ITransactionHistoryDal transactionHistoryDal, IAccountService accountService, IVerificationCodeService verificationCodeService,IUserService userService)
         {
             _transactionHistoryDal = transactionHistoryDal;
             _accountService = accountService;
             _verificationCodeService = verificationCodeService;
+            _userService = userService;
         }
 
         public async Task<string> InitiateDeposit(int accountId, decimal amount, string description = null)
@@ -88,6 +90,64 @@ namespace FinanceProject.BusinessLayer.Concreate
             };
             await _transactionHistoryDal.InsertAsync(transaction);
         }
+
+
+        public async Task InitiateTransfer(int senderAccountId, string recipientAccountNumber, decimal amount)
+        {
+            var senderAccount = await _accountService.TGetByIdAsync(senderAccountId);
+            if (senderAccount.Balance < amount)
+            {
+                throw new InvalidOperationException("Insufficient funds.");
+            }
+
+            var recipientAccount = await _accountService.GetByAccountNumberAsync(recipientAccountNumber);
+            if (recipientAccount == null)
+            {
+                throw new InvalidOperationException("Recipient account not found.");
+            }
+        }
+
+        public async Task Transfer(int senderAccountId, string recipientAccountNumber, decimal amount, string recipientName, string description = null)
+        {
+            var senderAccount = await _accountService.TGetByIdAsync(senderAccountId);
+            if (senderAccount.Balance < amount)
+            {
+                throw new InvalidOperationException("Insufficient funds.");
+            }
+
+            var recipientAccount = await _accountService.GetByAccountNumberAsync(recipientAccountNumber);
+            if (recipientAccount == null)
+            {
+                throw new InvalidOperationException("Recipient account not found.");
+            }
+
+            var recipientUser = await _userService.TGetByIdAsync(recipientAccount.UserID);
+            var fullName = recipientUser.FullName.ToLower();
+            if (fullName != recipientName.ToLower())
+            {
+                throw new InvalidOperationException("Recipient information does not match.");
+            }
+
+            // Para transferini gerçekleştirme
+            senderAccount.Balance -= amount;
+            recipientAccount.Balance += amount;
+            await _accountService.TUpdateAsync(senderAccount);
+            await _accountService.TUpdateAsync(recipientAccount);
+
+            var transaction = new TransactionHistory
+            {
+                AccountID = senderAccountId,
+                Amount = amount,
+                TransactionType = TransactionType.Transfer,
+                TransactionDate = DateTime.Now,
+                RecipientAccountNumber = recipientAccountNumber,
+                RecipientName = recipientName,
+                Description = description
+            };
+            await _transactionHistoryDal.InsertAsync(transaction);
+        }
+
+
 
         public async Task TDeleteAsync(int id)
         {

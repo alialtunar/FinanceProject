@@ -5,6 +5,7 @@ namespace FinanceProject.DataAccesLayer.Abstract
 {
     public interface IAccountDal : IGenericDal<Account>
     {
-        // Buraya gerekli özel yöntemleri ekleyebilirsiniz.
+        Task<Account> GetByAccountNumberAsync(string accountNumber);
+
     }
 }

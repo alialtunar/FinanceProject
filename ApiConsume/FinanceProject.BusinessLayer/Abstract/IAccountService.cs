@@ -7,5 +7,6 @@ namespace FinanceProject.BusinessLayer.Abstract
     public interface IAccountService : IGenericService<Account>
     {
         Task TInsertForUserAsync(int userId);
+        Task<Account> GetByAccountNumberAsync(string accountNumber);
     }
 }

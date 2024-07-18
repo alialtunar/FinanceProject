@@ -58,6 +58,13 @@ namespace FinanceProject.BusinessLayer.Concreate
             await _accountDal.InsertAsync(newAccount);
         }
 
+
+        public async Task<Account> GetByAccountNumberAsync(string accountNumber)
+        {
+            return await _accountDal.GetByAccountNumberAsync(accountNumber);
+        }
+
+
         private string GenerateUniqueAccountNumber()
         {
             // Burada benzersiz bir hesap numarası oluşturma mantığını uygulayabilirsiniz

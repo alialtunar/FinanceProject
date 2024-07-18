@@ -27,6 +27,7 @@ namespace FinanceProject.BusinessLayer.Concreate
 
         public async Task TRegisterAsync(UserRegisterDto userRegisterDto)
         {
+            userRegisterDto.FullName = userRegisterDto.FullName.ToLower();
             await _userDal.RegisterAsync(userRegisterDto);
 
             var newUser = await _userDal.ValidateUserAsync(new UserLoginDto
