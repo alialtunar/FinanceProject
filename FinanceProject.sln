@@ -7,15 +7,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ApiConsume", "ApiConsume", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontend", "Frontend", "{EAA51A4D-1D04-4CCE-86DA-3610B776A80C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceProject.DtoLayer", "ApiConsume\FinanceProject.DtoLayer\FinanceProject.DtoLayer.csproj", "{756CCA5F-7820-4809-9C97-B6ED6039C12B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceProject.DtoLayer", "ApiConsume\FinanceProject.DtoLayer\FinanceProject.DtoLayer.csproj", "{756CCA5F-7820-4809-9C97-B6ED6039C12B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceProject.BusinessLayer", "ApiConsume\FinanceProject.BusinessLayer\FinanceProject.BusinessLayer.csproj", "{E12E3737-2AE3-475A-BD8D-62D48F406DD4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceProject.BusinessLayer", "ApiConsume\FinanceProject.BusinessLayer\FinanceProject.BusinessLayer.csproj", "{E12E3737-2AE3-475A-BD8D-62D48F406DD4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceProject.DataAccesLayer", "ApiConsume\FinanceProject.DataAccesLayer\FinanceProject.DataAccesLayer.csproj", "{0E4CAF89-7891-4160-A530-C5D6669E2A7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceProject.DataAccesLayer", "ApiConsume\FinanceProject.DataAccesLayer\FinanceProject.DataAccesLayer.csproj", "{0E4CAF89-7891-4160-A530-C5D6669E2A7F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceProject.EntityLayer", "ApiConsume\FinanceProject.EntityLayer\FinanceProject.EntityLayer.csproj", "{6AD9E673-D16B-466E-95BC-DFC48224350B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceProject.EntityLayer", "ApiConsume\FinanceProject.EntityLayer\FinanceProject.EntityLayer.csproj", "{6AD9E673-D16B-466E-95BC-DFC48224350B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceProject.WebApi", "ApiConsume\FinanceProject.WebApi\FinanceProject.WebApi.csproj", "{1149E855-26EC-406D-A0FD-CF430EBD082E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceProject.WebApi", "ApiConsume\FinanceProject.WebApi\FinanceProject.WebApi.csproj", "{1149E855-26EC-406D-A0FD-CF430EBD082E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceProject.Core", "ApiConsume\FinanceProject.Core\FinanceProject.Core.csproj", "{85708979-DEFD-4DD3-88BE-29CA1F921DAD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +45,10 @@ Global
 		{1149E855-26EC-406D-A0FD-CF430EBD082E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1149E855-26EC-406D-A0FD-CF430EBD082E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1149E855-26EC-406D-A0FD-CF430EBD082E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85708979-DEFD-4DD3-88BE-29CA1F921DAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85708979-DEFD-4DD3-88BE-29CA1F921DAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85708979-DEFD-4DD3-88BE-29CA1F921DAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85708979-DEFD-4DD3-88BE-29CA1F921DAD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,6 +59,7 @@ Global
 		{0E4CAF89-7891-4160-A530-C5D6669E2A7F} = {0F783E5A-DDD9-4C05-B8E6-B66E16ADA018}
 		{6AD9E673-D16B-466E-95BC-DFC48224350B} = {0F783E5A-DDD9-4C05-B8E6-B66E16ADA018}
 		{1149E855-26EC-406D-A0FD-CF430EBD082E} = {0F783E5A-DDD9-4C05-B8E6-B66E16ADA018}
+		{85708979-DEFD-4DD3-88BE-29CA1F921DAD} = {0F783E5A-DDD9-4C05-B8E6-B66E16ADA018}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8B1EB786-43E3-4F68-B6FB-6207C0AA79EF}

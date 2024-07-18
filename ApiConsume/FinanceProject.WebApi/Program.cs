@@ -4,6 +4,7 @@ using FinanceProject.BusinessLayer.Concreate.Jwt;
 using FinanceProject.DataAccesLayer.Abstract;
 using FinanceProject.DataAccesLayer.Concreate;
 using FinanceProject.DataAccesLayer.Dapper;
+using FinanceProject.WebApi.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
@@ -94,6 +95,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

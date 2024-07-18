@@ -1,6 +1,8 @@
 ﻿using FinanceProject.BusinessLayer.Abstract;
+using FinanceProject.Core.Exceptions;
 using FinanceProject.DataAccesLayer.Abstract;
 using FinanceProject.EntityLayer.Concreate;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -112,20 +114,20 @@ namespace FinanceProject.BusinessLayer.Concreate
             var senderAccount = await _accountService.TGetByIdAsync(senderAccountId);
             if (senderAccount.Balance < amount)
             {
-                throw new InvalidOperationException("Insufficient funds.");
+                throw new ErrorException(StatusCodes.Status400BadRequest, "Insufficient funds.");
             }
 
             var recipientAccount = await _accountService.GetByAccountNumberAsync(recipientAccountNumber);
             if (recipientAccount == null)
             {
-                throw new InvalidOperationException("Recipient account not found.");
+                throw new ErrorException(StatusCodes.Status404NotFound, "Recipient account not found.");
             }
 
             var recipientUser = await _userService.TGetByIdAsync(recipientAccount.UserID);
             var fullName = recipientUser.FullName.ToLower();
             if (fullName != recipientName.ToLower())
             {
-                throw new InvalidOperationException("Recipient information does not match.");
+                throw new ErrorException(StatusCodes.Status400BadRequest, "Recipient information does not match.");
             }
 
             // Para transferini gerçekleştirme

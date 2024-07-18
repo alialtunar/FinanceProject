@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FinanceProject.Core\FinanceProject.Core.csproj" />
     <ProjectReference Include="..\FinanceProject.DataAccesLayer\FinanceProject.DataAccesLayer.csproj" />
     <ProjectReference Include="..\FinanceProject.DtoLayer\FinanceProject.DtoLayer.csproj" />
     <ProjectReference Include="..\FinanceProject.EntityLayer\FinanceProject.EntityLayer.csproj" />
