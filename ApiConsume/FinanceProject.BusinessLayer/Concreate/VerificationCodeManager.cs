@@ -1,7 +1,10 @@
 ﻿using FinanceProject.BusinessLayer.Abstract;
+using FinanceProject.Core.Exceptions;
 using FinanceProject.DataAccesLayer.Abstract;
 using FinanceProject.EntityLayer.Concreate;
+using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace FinanceProject.BusinessLayer.Concreate
@@ -17,34 +20,48 @@ namespace FinanceProject.BusinessLayer.Concreate
 
         public async Task<VerificationCode> CreateVerificationCodeAsync(int accountId, decimal amount, TransactionType transactionType)
         {
-            var code = GenerateCode();
-            var verificationCode = new VerificationCode
+            try
             {
-                AccountId = accountId,
-                Code = code,
-                Amount = amount,
-                TransactionType = transactionType,
-                ExpirationTime = DateTime.UtcNow.AddMinutes(2),
-                IsUsed = false
-            };
-            await _verificationCodeDal.InsertAsync(verificationCode);
-            return verificationCode;
+                var code = GenerateCode();
+                var verificationCode = new VerificationCode
+                {
+                    AccountId = accountId,
+                    Code = code,
+                    Amount = amount,
+                    TransactionType = transactionType,
+                    ExpirationTime = DateTime.UtcNow.AddMinutes(2),
+                    IsUsed = false
+                };
+                await _verificationCodeDal.InsertAsync(verificationCode);
+                return verificationCode;
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Doğrulama kodu oluşturulamadı. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task<bool> VerifyCodeAsync(int accountId, string code, decimal amount, TransactionType transactionType)
         {
-            var verificationCode = await _verificationCodeDal.GetByCodeAsync(code);
-            if (verificationCode == null || verificationCode.IsUsed || verificationCode.ExpirationTime < DateTime.UtcNow)
+            try
             {
-                return false;
+                var verificationCode = await _verificationCodeDal.GetByCodeAsync(code);
+                if (verificationCode == null || verificationCode.IsUsed || verificationCode.ExpirationTime < DateTime.UtcNow)
+                {
+                    return false;
+                }
+                if (verificationCode.AccountId != accountId || verificationCode.Amount != amount || verificationCode.TransactionType != transactionType)
+                {
+                    return false;
+                }
+                verificationCode.IsUsed = true;
+                await _verificationCodeDal.UpdateAsync(verificationCode);
+                return true;
             }
-            if (verificationCode.AccountId != accountId || verificationCode.Amount != amount || verificationCode.TransactionType != transactionType)
+            catch (Exception)
             {
-                return false;
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Doğrulama kodu doğrulanamadı. Lütfen tekrar deneyin.");
             }
-            verificationCode.IsUsed = true;
-            await _verificationCodeDal.UpdateAsync(verificationCode);
-            return true;
         }
 
         private string GenerateCode()
@@ -55,27 +72,62 @@ namespace FinanceProject.BusinessLayer.Concreate
 
         public async Task TDeleteAsync(int id)
         {
-            await _verificationCodeDal.DeleteAsync(id);
+            try
+            {
+                await _verificationCodeDal.DeleteAsync(id);
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Doğrulama kodu silinemedi. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task<List<VerificationCode>> TGetAllAsync()
         {
-            return await _verificationCodeDal.GetAllAsync();
+            try
+            {
+                return await _verificationCodeDal.GetAllAsync();
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Doğrulama kodları alınamadı. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task<VerificationCode> TGetByIdAsync(int id)
         {
-            return await _verificationCodeDal.GetByIdAsync(id);
+            try
+            {
+                return await _verificationCodeDal.GetByIdAsync(id);
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Doğrulama kodu alınamadı. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task TInsertAsync(VerificationCode entity)
         {
-            await _verificationCodeDal.InsertAsync(entity);
+            try
+            {
+                await _verificationCodeDal.InsertAsync(entity);
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Doğrulama kodu eklenemedi. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task TUpdateAsync(VerificationCode entity)
         {
-            await _verificationCodeDal.UpdateAsync(entity);
+            try
+            {
+                await _verificationCodeDal.UpdateAsync(entity);
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Doğrulama kodu güncellenemedi. Lütfen tekrar deneyin.");
+            }
         }
     }
 }

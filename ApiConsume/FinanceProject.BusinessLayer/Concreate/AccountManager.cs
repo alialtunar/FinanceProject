@@ -1,6 +1,8 @@
 ﻿using FinanceProject.BusinessLayer.Abstract;
+using FinanceProject.Core.Exceptions;
 using FinanceProject.DataAccesLayer.Abstract;
 using FinanceProject.EntityLayer.Concreate;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,67 +20,102 @@ namespace FinanceProject.BusinessLayer.Concreate
 
         public async Task TDeleteAsync(int id)
         {
-            await _accountDal.DeleteAsync(id);
+            try
+            {
+                await _accountDal.DeleteAsync(id);
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Hesap silinemedi. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task<List<Account>> TGetAllAsync()
         {
-            return await _accountDal.GetAllAsync();
+            try
+            {
+                return await _accountDal.GetAllAsync();
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Hesaplar alınamadı. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task<Account> TGetByIdAsync(int id)
         {
-            return await _accountDal.GetByIdAsync(id);
+            try
+            {
+                return await _accountDal.GetByIdAsync(id);
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Hesap alınamadı. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task TInsertAsync(Account entity)
         {
-            await _accountDal.InsertAsync(entity);
+            try
+            {
+                await _accountDal.InsertAsync(entity);
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Hesap eklenemedi. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task TUpdateAsync(Account entity)
         {
-            await _accountDal.UpdateAsync(entity);
+            try
+            {
+                await _accountDal.UpdateAsync(entity);
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Hesap güncellenemedi. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task TInsertForUserAsync(int userId)
         {
-            // Benzersiz hesap numarası oluşturma
-            string accountNumber = GenerateUniqueAccountNumber();
-
-            // Yeni hesap oluşturma
-            var newAccount = new Account
+            try
             {
-                AccountNumber = accountNumber,
-                Balance = 0,
-                UserID = userId
-            };
-
-            // Hesabı veritabanına ekleme
-            await _accountDal.InsertAsync(newAccount);
+                var newAccountNumber = GenerateUniqueAccountNumber();
+                var newAccount = new Account
+                {
+                    UserID = userId,
+                    AccountNumber = newAccountNumber,
+                    Balance = 0
+                };
+                await _accountDal.InsertAsync(newAccount);
+              
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Hesap oluşturulamadı. Lütfen tekrar deneyin.");
+            }
         }
 
 
         public async Task<Account> GetByAccountNumberAsync(string accountNumber)
         {
-            return await _accountDal.GetByAccountNumberAsync(accountNumber);
+            try
+            {
+                return await _accountDal.GetByAccountNumberAsync(accountNumber);
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Hesap numarasına göre hesap alınamadı. Lütfen tekrar deneyin.");
+            }
         }
 
+       
 
         private string GenerateUniqueAccountNumber()
         {
-            // Burada benzersiz bir hesap numarası oluşturma mantığını uygulayabilirsiniz
-            // Örneğin, rastgele bir şekilde oluşturulabilir veya veritabanında mevcut
-            // olmayan bir numara oluşturulabilir.
-
-            // Örnek olarak bir rastgele numara oluşturma:
-            Random random = new Random();
-            string accountNumber = "ACC" + random.Next(100000, 999999).ToString();
-
-            // Benzersiz olup olmadığını kontrol edebilirsiniz
-            // Örneğin, _accountDal içindeki GetAllAsync() veya benzeri bir metotla kontrol edebilirsiniz
-
-            return accountNumber;
+            return Guid.NewGuid().ToString().Replace("-", "").Substring(0, 10).ToUpper();
         }
     }
 }

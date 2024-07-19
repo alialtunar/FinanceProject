@@ -1,5 +1,6 @@
 ﻿using FinanceProject.BusinessLayer.Abstract;
 using FinanceProject.BusinessLayer.Concreate.Jwt;
+using FinanceProject.Core.Exceptions;
 using FinanceProject.DataAccesLayer.Abstract;
 using FinanceProject.DtoLayer.Dtos.UserDto;
 using FinanceProject.EntityLayer.Concreate;
@@ -27,62 +28,111 @@ namespace FinanceProject.BusinessLayer.Concreate
 
         public async Task TRegisterAsync(UserRegisterDto userRegisterDto)
         {
-            userRegisterDto.FullName = userRegisterDto.FullName.ToLower();
-            await _userDal.RegisterAsync(userRegisterDto);
-
-            var newUser = await _userDal.ValidateUserAsync(new UserLoginDto
+            try
             {
-                Email = userRegisterDto.Email,
-                Password = userRegisterDto.Password
-            });
+                userRegisterDto.FullName = userRegisterDto.FullName.ToLower();
+                await _userDal.RegisterAsync(userRegisterDto);
 
-            // Kullanıcıya ait bir account oluştur (0 bakiye ile)
-            await _accountService.TInsertForUserAsync(newUser.ID);
+                var newUser = await _userDal.ValidateUserAsync(new UserLoginDto
+                {
+                    Email = userRegisterDto.Email,
+                    Password = userRegisterDto.Password
+                });
+
+                // Kullanıcıya ait bir account oluştur (0 bakiye ile)
+                await _accountService.TInsertForUserAsync(newUser.ID);
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Kullanıcı kaydedilemedi. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task<User> TLoginAsync(UserLoginDto userLoginDto)
         {
-            var user = await _userDal.ValidateUserAsync(userLoginDto);
-            if (user == null) return null;
-
-            var token = _jwtService.GenerateToken(user.ID.ToString(), user.Role);
-
-            // Token'i HTTP response içinde cookie olarak gönder
-            var httpResponse = _httpContextAccessor.HttpContext.Response;
-            httpResponse.Cookies.Append("JWTToken", token, new CookieOptions
+            try
             {
-                HttpOnly = true, // Sadece HTTP üzerinden erişilebilir
-                Secure = true,   // HTTPS üzerinden iletişimde kullanılabilir (gerektiğinde)
-                SameSite = SameSiteMode.Strict, // Güvenlik için SameSite ayarı
-                Expires = DateTime.UtcNow.AddHours(1) // Token'ın geçerlilik süresi
-            });
+                var user = await _userDal.ValidateUserAsync(userLoginDto);
+                if (user == null) return null;
 
-            return user;
+                var token = _jwtService.GenerateToken(user.ID.ToString(), user.Role);
+
+                // Token'i HTTP response içinde cookie olarak gönder
+                var httpResponse = _httpContextAccessor.HttpContext.Response;
+                httpResponse.Cookies.Append("JWTToken", token, new CookieOptions
+                {
+                    HttpOnly = true, // Sadece HTTP üzerinden erişilebilir
+                    Secure = true,   // HTTPS üzerinden iletişimde kullanılabilir (gerektiğinde)
+                    SameSite = SameSiteMode.Strict, // Güvenlik için SameSite ayarı
+                    Expires = DateTime.UtcNow.AddHours(1) // Token'ın geçerlilik süresi
+                });
+
+                return user;
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Kullanıcı giriş yapamadı. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task TDeleteAsync(int id)
         {
-            await _userDal.DeleteAsync(id);
+            try
+            {
+                await _userDal.DeleteAsync(id);
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Kullanıcı silinemedi. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task<List<User>> TGetAllAsync()
         {
-            return await _userDal.GetAllAsync();
+            try
+            {
+                return await _userDal.GetAllAsync();
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Kullanıcılar alınamadı. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task<User> TGetByIdAsync(int id)
         {
-            return await _userDal.GetByIdAsync(id);
+            try
+            {
+                return await _userDal.GetByIdAsync(id);
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Kullanıcı alınamadı. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task TInsertAsync(User entity)
         {
-            await _userDal.InsertAsync(entity);
+            try
+            {
+                await _userDal.InsertAsync(entity);
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Kullanıcı eklenemedi. Lütfen tekrar deneyin.");
+            }
         }
 
         public async Task TUpdateAsync(User entity)
         {
-            await _userDal.UpdateAsync(entity);
+            try
+            {
+                await _userDal.UpdateAsync(entity);
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "Kullanıcı güncellenemedi. Lütfen tekrar deneyin.");
+            }
         }
     }
 }

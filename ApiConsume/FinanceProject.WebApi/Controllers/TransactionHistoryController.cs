@@ -25,39 +25,40 @@ namespace FinanceProject.WebApi.Controllers
         }
 
         [HttpGet]
-        public IActionResult TransactionHistoryList()
+        public async Task<IActionResult> TransactionHistoryList()
         {
-            var values = _transactionHistoryService.TGetAllAsync();
+            var values = await _transactionHistoryService.TGetAllAsync();
             return Ok(values);
         }
 
         [HttpPost]
 
-        public IActionResult AddTransactionHistory(TransactionHistory transactionHistory)
+        public async Task<IActionResult> AddTransactionHistory(TransactionHistory transactionHistory)
         {
-            _transactionHistoryService.TInsertAsync(transactionHistory);
+          await  _transactionHistoryService.TInsertAsync(transactionHistory);
             return Ok();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteTransactionHistory(int id)
+        public async Task<IActionResult> DeleteTransactionHistory(int id)
         {
-            var value = _transactionHistoryService.TGetByIdAsync(id);
-            _transactionHistoryService.TDeleteAsync(value.Id);
+            var value = await _transactionHistoryService.TGetByIdAsync(id);
+            _transactionHistoryService.TDeleteAsync(value.ID);
             return Ok();
         }
 
         [HttpPut]
-        public IActionResult UpdateTransactionHistory(TransactionHistory transactionHistory)
+        public async Task<IActionResult> UpdateTransactionHistory(TransactionHistory transactionHistory)
         {
-            _transactionHistoryService.TUpdateAsync(transactionHistory);
+           await _transactionHistoryService.TUpdateAsync(transactionHistory);
             return Ok();
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetTransactionHistory(int id)
+
+        public async Task<IActionResult> GetTransactionHistory(int id)
         {
-            var value = _transactionHistoryService.TGetByIdAsync(id);
+            var value = await _transactionHistoryService.TGetByIdAsync(id);
             return Ok(value);
         }
         [HttpPost("InitiateDeposit")]

@@ -3,53 +3,60 @@ using FinanceProject.Core.Exceptions;
 using FinanceProject.DataAccesLayer.Abstract;
 using FinanceProject.EntityLayer.Concreate;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
-namespace FinanceProject.BusinessLayer.Concreate
+public class TransactionHistoryManager : ITransactionHistoryService
 {
-    public class TransactionHistoryManager : ITransactionHistoryService
+    private readonly ITransactionHistoryDal _transactionHistoryDal;
+    private readonly IAccountService _accountService;
+    private readonly IVerificationCodeService _verificationCodeService;
+    private readonly IUserService _userService;
+
+    public TransactionHistoryManager(ITransactionHistoryDal transactionHistoryDal, IAccountService accountService, IVerificationCodeService verificationCodeService, IUserService userService)
     {
-        private readonly ITransactionHistoryDal _transactionHistoryDal;
-        private readonly IAccountService _accountService;
-        private readonly IVerificationCodeService _verificationCodeService;
-        private readonly IUserService _userService;
+        _transactionHistoryDal = transactionHistoryDal;
+        _accountService = accountService;
+        _verificationCodeService = verificationCodeService;
+        _userService = userService;
+    }
 
-        public TransactionHistoryManager(ITransactionHistoryDal transactionHistoryDal, IAccountService accountService, IVerificationCodeService verificationCodeService,IUserService userService)
-        {
-            _transactionHistoryDal = transactionHistoryDal;
-            _accountService = accountService;
-            _verificationCodeService = verificationCodeService;
-            _userService = userService;
-        }
-
-        public async Task<string> InitiateDeposit(int accountId, decimal amount, string description = null)
+    public async Task<string> InitiateDeposit(int accountId, decimal amount, string description = null)
+    {
+        try
         {
             var verificationCode = await _verificationCodeService.CreateVerificationCodeAsync(accountId, amount, TransactionType.Deposit);
-            // Send email to user with the code
-            // SendEmailToUser(accountId, verificationCode.Code);
             return verificationCode.Code;
         }
+        catch (Exception)
+        {
+            throw new ErrorException(StatusCodes.Status500InternalServerError, "Para yatırma işlemi başlatılamadı. Lütfen tekrar deneyin.");
+        }
+    }
 
-        public async Task<string> InitiateWithdraw(int accountId, decimal amount, string description = null)
+    public async Task<string> InitiateWithdraw(int accountId, decimal amount, string description = null)
+    {
+        try
         {
             var account = await _accountService.TGetByIdAsync(accountId);
             if (account.Balance < amount)
             {
-                throw new InvalidOperationException("Insufficient funds.");
+                throw new ErrorException(StatusCodes.Status403Forbidden, "Yetersiz bakiye.");
             }
             var verificationCode = await _verificationCodeService.CreateVerificationCodeAsync(accountId, amount, TransactionType.Withdrawal);
-            // Send email to user with the code
-            // SendEmailToUser(accountId, verificationCode.Code);
             return verificationCode.Code;
         }
+        catch (Exception)
+        {
+            throw new ErrorException(StatusCodes.Status500InternalServerError, "Para çekme işlemi başlatılamadı. Lütfen tekrar deneyin.");
+        }
+    }
 
-        public async Task Deposit(int accountId, decimal amount, string verificationCode, string description = null)
+    public async Task Deposit(int accountId, decimal amount, string verificationCode, string description = null)
+    {
+        try
         {
             if (!await _verificationCodeService.VerifyCodeAsync(accountId, verificationCode, amount, TransactionType.Deposit))
             {
-                throw new InvalidOperationException("Invalid or expired verification code.");
+                throw new ErrorException(StatusCodes.Status403Forbidden, "Geçersiz veya süresi dolmuş doğrulama kodu.");
             }
 
             var account = await _accountService.TGetByIdAsync(accountId);
@@ -66,18 +73,25 @@ namespace FinanceProject.BusinessLayer.Concreate
             };
             await _transactionHistoryDal.InsertAsync(transaction);
         }
+        catch (Exception)
+        {
+            throw new ErrorException(StatusCodes.Status500InternalServerError, "Para yatırma işlemi başarısız oldu. Lütfen tekrar deneyin.");
+        }
+    }
 
-        public async Task Withdraw(int accountId, decimal amount, string verificationCode, string description = null)
+    public async Task Withdraw(int accountId, decimal amount, string verificationCode, string description = null)
+    {
+        try
         {
             if (!await _verificationCodeService.VerifyCodeAsync(accountId, verificationCode, amount, TransactionType.Withdrawal))
             {
-                throw new InvalidOperationException("Invalid or expired verification code.");
+                throw new ErrorException(StatusCodes.Status403Forbidden, "Geçersiz veya süresi dolmuş doğrulama kodu.");
             }
 
             var account = await _accountService.TGetByIdAsync(accountId);
             if (account.Balance < amount)
             {
-                throw new InvalidOperationException("Insufficient funds.");
+                throw new ErrorException(StatusCodes.Status403Forbidden, "Yetersiz bakiye.");
             }
             account.Balance -= amount;
             await _accountService.TUpdateAsync(account);
@@ -92,45 +106,57 @@ namespace FinanceProject.BusinessLayer.Concreate
             };
             await _transactionHistoryDal.InsertAsync(transaction);
         }
+        catch (Exception)
+        {
+            throw new ErrorException(StatusCodes.Status500InternalServerError, "Para çekme işlemi başarısız oldu. Lütfen tekrar deneyin.");
+        }
+    }
 
-
-        public async Task InitiateTransfer(int senderAccountId, string recipientAccountNumber, decimal amount)
+    public async Task InitiateTransfer(int senderAccountId, string recipientAccountNumber, decimal amount)
+    {
+        try
         {
             var senderAccount = await _accountService.TGetByIdAsync(senderAccountId);
             if (senderAccount.Balance < amount)
             {
-                throw new InvalidOperationException("Insufficient funds.");
+                throw new ErrorException(StatusCodes.Status403Forbidden, "Yetersiz bakiye.");
             }
 
             var recipientAccount = await _accountService.GetByAccountNumberAsync(recipientAccountNumber);
             if (recipientAccount == null)
             {
-                throw new InvalidOperationException("Recipient account not found.");
+                throw new ErrorException(StatusCodes.Status404NotFound, "Alıcı bulunamadı.");
             }
         }
+        catch (Exception)
+        {
+            throw new ErrorException(StatusCodes.Status500InternalServerError, "Havale işlemi başlatılamadı. Lütfen tekrar deneyin.");
+        }
+    }
 
-        public async Task Transfer(int senderAccountId, string recipientAccountNumber, decimal amount, string recipientName, string description = null)
+    public async Task Transfer(int senderAccountId, string recipientAccountNumber, decimal amount, string recipientName, string description = null)
+    {
+        try
         {
             var senderAccount = await _accountService.TGetByIdAsync(senderAccountId);
             if (senderAccount.Balance < amount)
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, "Insufficient funds.");
+                throw new ErrorException(StatusCodes.Status403Forbidden, "Yetersiz bakiye.");
             }
 
             var recipientAccount = await _accountService.GetByAccountNumberAsync(recipientAccountNumber);
             if (recipientAccount == null)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, "Recipient account not found.");
+                throw new ErrorException(StatusCodes.Status404NotFound, "Alıcı bulunamadı.");
             }
 
             var recipientUser = await _userService.TGetByIdAsync(recipientAccount.UserID);
             var fullName = recipientUser.FullName.ToLower();
             if (fullName != recipientName.ToLower())
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, "Recipient information does not match.");
+                throw new ErrorException(StatusCodes.Status401Unauthorized, "Alıcı bilgileri uyuşmuyor.");
             }
 
-            // Para transferini gerçekleştirme
             senderAccount.Balance -= amount;
             recipientAccount.Balance += amount;
             await _accountService.TUpdateAsync(senderAccount);
@@ -148,32 +174,69 @@ namespace FinanceProject.BusinessLayer.Concreate
             };
             await _transactionHistoryDal.InsertAsync(transaction);
         }
+        catch (Exception)
+        {
+            throw new ErrorException(StatusCodes.Status500InternalServerError, "Havale işlemi başarısız oldu. Lütfen tekrar deneyin.");
+        }
+    }
 
-
-
-        public async Task TDeleteAsync(int id)
+    public async Task TDeleteAsync(int id)
+    {
+        try
         {
             await _transactionHistoryDal.DeleteAsync(id);
         }
+        catch (Exception)
+        {
+            throw new ErrorException(StatusCodes.Status500InternalServerError, "İşlem silme başarısız oldu. Lütfen tekrar deneyin.");
+        }
+    }
 
-        public async Task<List<TransactionHistory>> TGetAllAsync()
+    public async Task<List<TransactionHistory>> TGetAllAsync()
+    {
+        try
         {
             return await _transactionHistoryDal.GetAllAsync();
         }
+        catch (Exception)
+        {
+            throw new ErrorException(StatusCodes.Status500InternalServerError, "İşlem geçmişi alınamadı. Lütfen tekrar deneyin.");
+        }
+    }
 
-        public async Task<TransactionHistory> TGetByIdAsync(int id)
+    public async Task<TransactionHistory> TGetByIdAsync(int id)
+    {
+        try
         {
             return await _transactionHistoryDal.GetByIdAsync(id);
         }
+        catch (Exception)
+        {
+            throw new ErrorException(StatusCodes.Status500InternalServerError, "İşlem alınamadı. Lütfen tekrar deneyin.");
+        }
+    }
 
-        public async Task TInsertAsync(TransactionHistory entity)
+    public async Task TInsertAsync(TransactionHistory entity)
+    {
+        try
         {
             await _transactionHistoryDal.InsertAsync(entity);
         }
+        catch (Exception)
+        {
+            throw new ErrorException(StatusCodes.Status500InternalServerError, "İşlem eklenemedi. Lütfen tekrar deneyin.");
+        }
+    }
 
-        public async Task TUpdateAsync(TransactionHistory entity)
+    public async Task TUpdateAsync(TransactionHistory entity)
+    {
+        try
         {
             await _transactionHistoryDal.UpdateAsync(entity);
+        }
+        catch (Exception)
+        {
+            throw new ErrorException(StatusCodes.Status500InternalServerError, "İşlem güncellenemedi. Lütfen tekrar deneyin.");
         }
     }
 }
