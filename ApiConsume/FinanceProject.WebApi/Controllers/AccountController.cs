@@ -1,8 +1,9 @@
 ﻿using FinanceProject.BusinessLayer.Abstract;
 using FinanceProject.EntityLayer.Concreate;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using FinanceProject.Core.Exceptions;
 
 namespace FinanceProject.WebApi.Controllers
 {
@@ -20,36 +21,91 @@ namespace FinanceProject.WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> AccountList()
         {
-            var values = await _accountService.TGetAllAsync();
-            return Ok(values);
+            try
+            {
+                var values = await _accountService.TGetAllAsync();
+                return Ok(values);
+            }
+            catch (ErrorException ex)
+            {
+                return StatusCode(ex.StatusCode, new { Message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> AddAccount(Account account)
         {
-            await _accountService.TInsertAsync(account);
-            return Ok();
+            try
+            {
+                await _accountService.TInsertAsync(account);
+                return Ok();
+            }
+            catch (ErrorException ex)
+            {
+                return StatusCode(ex.StatusCode, new { Message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAccount(int id)
         {
-            await _accountService.TDeleteAsync(id);
-            return Ok();
+            try
+            {
+                await _accountService.TDeleteAsync(id);
+                return Ok();
+            }
+            catch (ErrorException ex)
+            {
+                return StatusCode(ex.StatusCode, new { Message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
+            }
         }
 
         [HttpPut]
         public async Task<IActionResult> UpdateAccount(Account account)
         {
-            await _accountService.TUpdateAsync(account);
-            return Ok();
+            try
+            {
+                await _accountService.TUpdateAsync(account);
+                return Ok();
+            }
+            catch (ErrorException ex)
+            {
+                return StatusCode(ex.StatusCode, new { Message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAccount(int id)
         {
-            var value = await _accountService.TGetByIdAsync(id);
-            return Ok(value);
+            try
+            {
+                var value = await _accountService.TGetByIdAsync(id);
+                return Ok(value);
+            }
+            catch (ErrorException ex)
+            {
+                return StatusCode(ex.StatusCode, new { Message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
+            }
         }
     }
 }

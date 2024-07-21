@@ -3,6 +3,9 @@ using FinanceProject.Core.Exceptions;
 using FinanceProject.DataAccesLayer.Abstract;
 using FinanceProject.EntityLayer.Concreate;
 using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public class TransactionHistoryManager : ITransactionHistoryService
 {
@@ -26,7 +29,7 @@ public class TransactionHistoryManager : ITransactionHistoryService
             var verificationCode = await _verificationCodeService.CreateVerificationCodeAsync(accountId, amount, TransactionType.Deposit);
             return verificationCode.Code;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             throw new ErrorException(StatusCodes.Status500InternalServerError, "Para yatırma işlemi başlatılamadı. Lütfen tekrar deneyin.");
         }
@@ -44,7 +47,11 @@ public class TransactionHistoryManager : ITransactionHistoryService
             var verificationCode = await _verificationCodeService.CreateVerificationCodeAsync(accountId, amount, TransactionType.Withdrawal);
             return verificationCode.Code;
         }
-        catch (Exception)
+        catch (ErrorException ex)
+        {
+            throw new ErrorException(ex.StatusCode, ex.Message);
+        }
+        catch (Exception ex)
         {
             throw new ErrorException(StatusCodes.Status500InternalServerError, "Para çekme işlemi başlatılamadı. Lütfen tekrar deneyin.");
         }
@@ -73,7 +80,11 @@ public class TransactionHistoryManager : ITransactionHistoryService
             };
             await _transactionHistoryDal.InsertAsync(transaction);
         }
-        catch (Exception)
+        catch (ErrorException ex)
+        {
+            throw new ErrorException(ex.StatusCode, ex.Message);
+        }
+        catch (Exception ex)
         {
             throw new ErrorException(StatusCodes.Status500InternalServerError, "Para yatırma işlemi başarısız oldu. Lütfen tekrar deneyin.");
         }
@@ -106,7 +117,11 @@ public class TransactionHistoryManager : ITransactionHistoryService
             };
             await _transactionHistoryDal.InsertAsync(transaction);
         }
-        catch (Exception)
+        catch (ErrorException ex)
+        {
+            throw new ErrorException(ex.StatusCode, ex.Message);
+        }
+        catch (Exception ex)
         {
             throw new ErrorException(StatusCodes.Status500InternalServerError, "Para çekme işlemi başarısız oldu. Lütfen tekrar deneyin.");
         }
@@ -128,7 +143,11 @@ public class TransactionHistoryManager : ITransactionHistoryService
                 throw new ErrorException(StatusCodes.Status404NotFound, "Alıcı bulunamadı.");
             }
         }
-        catch (Exception)
+        catch (ErrorException ex)
+        {
+            throw new ErrorException(ex.StatusCode, ex.Message);
+        }
+        catch (Exception ex)
         {
             throw new ErrorException(StatusCodes.Status500InternalServerError, "Havale işlemi başlatılamadı. Lütfen tekrar deneyin.");
         }
@@ -174,7 +193,11 @@ public class TransactionHistoryManager : ITransactionHistoryService
             };
             await _transactionHistoryDal.InsertAsync(transaction);
         }
-        catch (Exception)
+        catch (ErrorException ex)
+        {
+            throw new ErrorException(ex.StatusCode, ex.Message);
+        }
+        catch (Exception ex)
         {
             throw new ErrorException(StatusCodes.Status500InternalServerError, "Havale işlemi başarısız oldu. Lütfen tekrar deneyin.");
         }
@@ -186,7 +209,7 @@ public class TransactionHistoryManager : ITransactionHistoryService
         {
             await _transactionHistoryDal.DeleteAsync(id);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             throw new ErrorException(StatusCodes.Status500InternalServerError, "İşlem silme başarısız oldu. Lütfen tekrar deneyin.");
         }
@@ -198,7 +221,7 @@ public class TransactionHistoryManager : ITransactionHistoryService
         {
             return await _transactionHistoryDal.GetAllAsync();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             throw new ErrorException(StatusCodes.Status500InternalServerError, "İşlem geçmişi alınamadı. Lütfen tekrar deneyin.");
         }
@@ -210,7 +233,7 @@ public class TransactionHistoryManager : ITransactionHistoryService
         {
             return await _transactionHistoryDal.GetByIdAsync(id);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             throw new ErrorException(StatusCodes.Status500InternalServerError, "İşlem alınamadı. Lütfen tekrar deneyin.");
         }
@@ -222,9 +245,9 @@ public class TransactionHistoryManager : ITransactionHistoryService
         {
             await _transactionHistoryDal.InsertAsync(entity);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw new ErrorException(StatusCodes.Status500InternalServerError, "İşlem eklenemedi. Lütfen tekrar deneyin.");
+            throw new ErrorException(StatusCodes.Status500InternalServerError, "İşlem ekleme başarısız oldu. Lütfen tekrar deneyin.");
         }
     }
 
@@ -234,9 +257,9 @@ public class TransactionHistoryManager : ITransactionHistoryService
         {
             await _transactionHistoryDal.UpdateAsync(entity);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw new ErrorException(StatusCodes.Status500InternalServerError, "İşlem güncellenemedi. Lütfen tekrar deneyin.");
+            throw new ErrorException(StatusCodes.Status500InternalServerError, "İşlem güncelleme başarısız oldu. Lütfen tekrar deneyin.");
         }
     }
 }

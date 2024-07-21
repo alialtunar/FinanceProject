@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceProject.EntityLayer"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceProject.WebApi", "ApiConsume\FinanceProject.WebApi\FinanceProject.WebApi.csproj", "{1149E855-26EC-406D-A0FD-CF430EBD082E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceProject.Core", "ApiConsume\FinanceProject.Core\FinanceProject.Core.csproj", "{85708979-DEFD-4DD3-88BE-29CA1F921DAD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceProject.Core", "ApiConsume\FinanceProject.Core\FinanceProject.Core.csproj", "{85708979-DEFD-4DD3-88BE-29CA1F921DAD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

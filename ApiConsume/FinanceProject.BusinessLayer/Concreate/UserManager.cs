@@ -39,12 +39,17 @@ namespace FinanceProject.BusinessLayer.Concreate
                     Password = userRegisterDto.Password
                 });
 
+                if (newUser == null)
+                {
+                    throw new ErrorException(StatusCodes.Status400BadRequest, "Kullanıcı doğrulama başarısız oldu.");
+                }
+
                 // Kullanıcıya ait bir account oluştur (0 bakiye ile)
                 await _accountService.TInsertForUserAsync(newUser.ID);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "Kullanıcı kaydedilemedi. Lütfen tekrar deneyin.");
+                throw new ErrorException(StatusCodes.Status500InternalServerError, $"Kullanıcı kaydedilemedi. Hata: {ex.Message}");
             }
         }
 
@@ -53,7 +58,10 @@ namespace FinanceProject.BusinessLayer.Concreate
             try
             {
                 var user = await _userDal.ValidateUserAsync(userLoginDto);
-                if (user == null) return null;
+                if (user == null)
+                {
+                    throw new ErrorException(StatusCodes.Status403Forbidden, "Kullanıcı bulunamadı.");
+                }
 
                 var token = _jwtService.GenerateToken(user.ID.ToString(), user.Role);
 
@@ -69,9 +77,13 @@ namespace FinanceProject.BusinessLayer.Concreate
 
                 return user;
             }
-            catch (Exception)
+            catch (ErrorException ex)
             {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "Kullanıcı giriş yapamadı. Lütfen tekrar deneyin.");
+                throw new ErrorException(ex.StatusCode, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, $"Kullanıcı giriş yapamadı. Hata: {ex.Message}");
             }
         }
 
@@ -81,9 +93,9 @@ namespace FinanceProject.BusinessLayer.Concreate
             {
                 await _userDal.DeleteAsync(id);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "Kullanıcı silinemedi. Lütfen tekrar deneyin.");
+                throw new ErrorException(StatusCodes.Status500InternalServerError, $"Kullanıcı silinemedi. Hata: {ex.Message}");
             }
         }
 
@@ -93,9 +105,9 @@ namespace FinanceProject.BusinessLayer.Concreate
             {
                 return await _userDal.GetAllAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "Kullanıcılar alınamadı. Lütfen tekrar deneyin.");
+                throw new ErrorException(StatusCodes.Status500InternalServerError, $"Kullanıcılar alınamadı. Hata: {ex.Message}");
             }
         }
 
@@ -105,9 +117,9 @@ namespace FinanceProject.BusinessLayer.Concreate
             {
                 return await _userDal.GetByIdAsync(id);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "Kullanıcı alınamadı. Lütfen tekrar deneyin.");
+                throw new ErrorException(StatusCodes.Status500InternalServerError, $"Kullanıcı alınamadı. Hata: {ex.Message}");
             }
         }
 
@@ -117,9 +129,9 @@ namespace FinanceProject.BusinessLayer.Concreate
             {
                 await _userDal.InsertAsync(entity);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "Kullanıcı eklenemedi. Lütfen tekrar deneyin.");
+                throw new ErrorException(StatusCodes.Status500InternalServerError, $"Kullanıcı eklenemedi. Hata: {ex.Message}");
             }
         }
 
@@ -129,9 +141,9 @@ namespace FinanceProject.BusinessLayer.Concreate
             {
                 await _userDal.UpdateAsync(entity);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "Kullanıcı güncellenemedi. Lütfen tekrar deneyin.");
+                throw new ErrorException(StatusCodes.Status500InternalServerError, $"Kullanıcı güncellenemedi. Hata: {ex.Message}");
             }
         }
     }

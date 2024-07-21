@@ -3,7 +3,6 @@ using FinanceProject.DataAccesLayer.Abstract;
 using FinanceProject.DataAccesLayer.Repository;
 using FinanceProject.EntityLayer.Concreate;
 using System.Data;
-using System.Data.Common;
 using System.Threading.Tasks;
 
 namespace FinanceProject.DataAccesLayer.Dapper
@@ -19,16 +18,28 @@ namespace FinanceProject.DataAccesLayer.Dapper
 
         public async Task<VerificationCode> GetByCodeAsync(string code)
         {
-            var sql = "SELECT * FROM verificationcode WHERE code = @Code";
-            return await _connection.QuerySingleOrDefaultAsync<VerificationCode>(sql, new { Code = code });
+            try
+            {
+                var sql = "SELECT * FROM verificationcode WHERE code = @Code";
+                return await _connection.QuerySingleOrDefaultAsync<VerificationCode>(sql, new { Code = code });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Kod ile doğrulama kodu alınamadı. Hata: {ex.Message}");
+            }
         }
-
 
         public async Task UpdateAsync(VerificationCode verificationCode)
         {
-            var sql = "UPDATE verificationcode SET \"isused\" = @IsUsed WHERE \"id\" = @Id";
-            await _connection.ExecuteAsync(sql, verificationCode);
+            try
+            {
+                var sql = "UPDATE verificationcode SET \"isused\" = @IsUsed WHERE \"id\" = @Id";
+                await _connection.ExecuteAsync(sql, verificationCode);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Doğrulama kodu güncellenemedi. Hata: {ex.Message}");
+            }
         }
-
     }
 }
