@@ -72,7 +72,7 @@ namespace FinanceProject.BusinessLayer.Concreate
                     HttpOnly = true, // Sadece HTTP üzerinden erişilebilir
                     Secure = true,   // HTTPS üzerinden iletişimde kullanılabilir (gerektiğinde)
                     SameSite = SameSiteMode.Strict, // Güvenlik için SameSite ayarı
-                    Expires = DateTime.UtcNow.AddHours(1) // Token'ın geçerlilik süresi
+                    Expires = DateTime.UtcNow.AddDays(2) // Token'ın geçerlilik süresi
                 });
 
                 return user;

@@ -53,13 +53,16 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder =>
-    {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
-    });
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:3000") // Buraya kendi frontend orijininizi ekleyin
+                   .AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowCredentials(); // Bu satýrý ekleyin
+        });
 });
+
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -99,6 +102,7 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthentication();
+app.UseCors("AllowSpecificOrigin"); // Burada oluþturduðunuz policy adýný kullanýn
 app.UseAuthorization();
 app.UseCors();
 
