@@ -154,5 +154,12 @@ namespace FinanceProject.WebApi.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Kullanıcı giriş yapamadı. Lütfen tekrar deneyin.");
             }
         }
+
+        [HttpGet("user-count")]
+        public async Task<IActionResult> GetTotalUserCount()
+        {
+            var count = await _userService.TGetTotalUserCount();
+            return Ok(count);
+        }
     }
 }

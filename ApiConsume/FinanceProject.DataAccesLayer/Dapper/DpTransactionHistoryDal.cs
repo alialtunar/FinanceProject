@@ -95,6 +95,19 @@ namespace FinanceProject.DataAccesLayer.Dapper
         }
 
 
+        public async Task<decimal> GetTransactionVolumeLast24Hours()
+        {
+            string query = @"
+                SELECT SUM(Amount) 
+                FROM TransactionHistory 
+                WHERE TransactionDate >= @StartDate";
+
+            var parameters = new { StartDate = DateTime.Now.AddHours(-24) };
+
+            return await _connection.QueryFirstOrDefaultAsync<decimal>(query, parameters);
+        }
+
+
     }
 
 

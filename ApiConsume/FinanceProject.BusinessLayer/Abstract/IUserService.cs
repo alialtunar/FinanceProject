@@ -9,5 +9,8 @@ namespace FinanceProject.BusinessLayer.Abstract
         Task TRegisterAsync(UserRegisterDto userRegisterDto);
 
         Task<User> TLoginAsync(UserLoginDto userLoginDto);
+
+        Task<int> TGetTotalUserCount();
+
     }
 }

@@ -146,5 +146,10 @@ namespace FinanceProject.BusinessLayer.Concreate
                 throw new ErrorException(StatusCodes.Status500InternalServerError, $"Kullanıcı güncellenemedi. Hata: {ex.Message}");
             }
         }
+
+        public async Task<int> TGetTotalUserCount()
+        {
+            return await _userDal.GetTotalUserCount();
+        }
     }
 }

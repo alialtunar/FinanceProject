@@ -17,5 +17,7 @@ namespace FinanceProject.DataAccesLayer.Abstract
         Task<IEnumerable<LastTransfersDto>> GetLast5TransfersUsersAsync(int accountId);
 
         Task<IEnumerable<TransactionHistory>> GetPagedTransactionHistoryAsync(int accountId, int page, int pageSize);
+
+        Task<decimal> GetTransactionVolumeLast24Hours();
     }
 }

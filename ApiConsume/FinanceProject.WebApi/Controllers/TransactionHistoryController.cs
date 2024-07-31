@@ -313,5 +313,12 @@ namespace FinanceProject.WebApi.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
             }
         }
+
+        [HttpGet("transaction-volume")]
+        public async Task<IActionResult> GetTransactionVolumeLast24Hours()
+        {
+            var volume = await _transactionHistoryService.TGetTransactionVolumeLast24Hours();
+            return Ok(volume);
+        }
     }
 }

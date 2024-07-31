@@ -5,6 +5,7 @@ using FinanceProject.DtoLayer.Dtos.UserDto;
 using FinanceProject.EntityLayer.Concreate;
 using System;
 using System.Data;
+using System.Data.Common;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -97,6 +98,12 @@ namespace FinanceProject.DataAccesLayer.Dapper
             {
                 throw new Exception(ex.Message);
             }
+        }
+
+        public async Task<int> GetTotalUserCount()
+        {
+            string query = "SELECT COUNT(*) FROM Users";
+            return await _connection.QueryFirstOrDefaultAsync<int>(query);
         }
     }
 }

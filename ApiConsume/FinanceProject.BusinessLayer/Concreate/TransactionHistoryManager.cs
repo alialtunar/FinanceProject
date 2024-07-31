@@ -281,4 +281,9 @@ public class TransactionHistoryManager : ITransactionHistoryService
     {
         return await _transactionHistoryDal.GetPagedTransactionHistoryAsync(accountId, page, pageSize);
     }
+
+    public async Task<decimal> TGetTransactionVolumeLast24Hours()
+    {
+        return await _transactionHistoryDal.GetTransactionVolumeLast24Hours();
+    }
 }

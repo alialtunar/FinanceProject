@@ -9,5 +9,7 @@ namespace FinanceProject.DataAccesLayer.Abstract
         Task RegisterAsync(UserRegisterDto userRegisterDto);
 
         Task<User> ValidateUserAsync(UserLoginDto userLoginDto);
+
+        Task<int> GetTotalUserCount();
     }
 }

@@ -21,5 +21,8 @@ namespace FinanceProject.BusinessLayer.Abstract
         Task<IEnumerable<LastTransfersDto>> TGetLast5TransfersUsersAsync(int accountId);
 
         Task<IEnumerable<TransactionHistory>> TGetPagedTransactionHistoryAsync(int accountId, int page, int pageSize);
+
+        Task<decimal> TGetTransactionVolumeLast24Hours();
+
     }
 }
