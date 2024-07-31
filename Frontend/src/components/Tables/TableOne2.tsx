@@ -1,6 +1,6 @@
 import React from "react";
 
-const TableOne = ({ transactions }: any) => {
+const TableOne = ({ transactions,handlePreviousPage,handleNextPage,page }: any) => {
   // Tarih formatlayıcı fonksiyon
   const formatDate = (dateString: any) => {
     const date = new Date(dateString);
@@ -90,6 +90,26 @@ const TableOne = ({ transactions }: any) => {
           </div>
         ))}
       </div>
+
+      <div className="flex justify-center items-center gap-4 my-4">
+  <button 
+    onClick={handlePreviousPage} 
+    disabled={page === 1}
+    className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md disabled:bg-gray-400 transition-colors duration-300 hover:bg-blue-600 disabled:cursor-not-allowed"
+  >
+    Previous
+  </button>
+  
+  <span className="text-lg font-medium text-gray-700">Page {page}</span>
+  
+  <button 
+    onClick={handleNextPage}
+    className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md transition-colors duration-300 hover:bg-blue-600"
+  >
+    Next
+  </button>
+</div>
+
     </div>
   );
 };

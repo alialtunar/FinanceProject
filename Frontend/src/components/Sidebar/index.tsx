@@ -45,9 +45,9 @@ const menuGroups = [
             />
           </svg>
         ),
-        label: "Dashboard",
-        route: "#",
-        children: [{ label: "eCommerce", route: "/" }],
+        label: "Dasboard",
+        route: "/user",
+       
       },
       {
         icon: (
@@ -65,8 +65,8 @@ const menuGroups = [
             />
           </svg>
         ),
-        label: "Calendar",
-        route: "/calendar",
+        label: "Para Çekme",
+        route: "/initiale",
       },
       {
         icon: (
@@ -88,8 +88,8 @@ const menuGroups = [
             />
           </svg>
         ),
-        label: "Profile",
-        route: "/profile",
+        label: "Para Yatırma",
+        route: "/deposite",
       },
       {
         icon: (
@@ -123,12 +123,9 @@ const menuGroups = [
             />
           </svg>
         ),
-        label: "Forms",
-        route: "#",
-        children: [
-          { label: "Form Elements", route: "/forms/form-elements" },
-          { label: "Form Layout", route: "/forms/form-layout" },
-        ],
+        label: "Para Transferi",
+        route: "/transfer",
+       
       },
       {
         icon: (
@@ -158,8 +155,8 @@ const menuGroups = [
             </defs>
           </svg>
         ),
-        label: "Tables",
-        route: "/tables",
+        label: "İşlemler",
+        route: "/transactions",
       },
       {
         icon: (
@@ -193,9 +190,10 @@ const menuGroups = [
             </defs>
           </svg>
         ),
-        label: "Settings",
+        label: "Ayarlar",
         route: "/settings",
       },
+     
     ],
   },
 

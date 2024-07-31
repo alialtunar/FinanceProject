@@ -1,11 +1,9 @@
 ﻿using FinanceProject.BusinessLayer.Abstract;
 using FinanceProject.Core.Exceptions;
 using FinanceProject.DataAccesLayer.Abstract;
+using FinanceProject.DtoLayer.Dtos.TransactionHistoryDto;
 using FinanceProject.EntityLayer.Concreate;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 public class TransactionHistoryManager : ITransactionHistoryService
 {
@@ -21,6 +19,12 @@ public class TransactionHistoryManager : ITransactionHistoryService
         _verificationCodeService = verificationCodeService;
         _userService = userService;
     }
+
+    public async Task<List<TransactionHistory>> TGetLastFiveTransactionsAsync(int accountId)
+    {
+        return await _transactionHistoryDal.GetLastFiveTransactionsAsync(accountId);
+    }
+
 
     public async Task<string> InitiateDeposit(int accountId, decimal amount, string description = null)
     {
@@ -137,7 +141,7 @@ public class TransactionHistoryManager : ITransactionHistoryService
                 throw new ErrorException(StatusCodes.Status403Forbidden, "Yetersiz bakiye.");
             }
 
-            var recipientAccount = await _accountService.GetByAccountNumberAsync(recipientAccountNumber);
+            var recipientAccount = await _accountService.TGetByAccountNumberAsync(recipientAccountNumber);
             if (recipientAccount == null)
             {
                 throw new ErrorException(StatusCodes.Status404NotFound, "Alıcı bulunamadı.");
@@ -163,7 +167,7 @@ public class TransactionHistoryManager : ITransactionHistoryService
                 throw new ErrorException(StatusCodes.Status403Forbidden, "Yetersiz bakiye.");
             }
 
-            var recipientAccount = await _accountService.GetByAccountNumberAsync(recipientAccountNumber);
+            var recipientAccount = await _accountService.TGetByAccountNumberAsync(recipientAccountNumber);
             if (recipientAccount == null)
             {
                 throw new ErrorException(StatusCodes.Status404NotFound, "Alıcı bulunamadı.");
@@ -261,5 +265,20 @@ public class TransactionHistoryManager : ITransactionHistoryService
         {
             throw new ErrorException(StatusCodes.Status500InternalServerError, "İşlem güncelleme başarısız oldu. Lütfen tekrar deneyin.");
         }
+    }
+
+    public async Task<decimal> TGetTotalAmountLast24HoursAsync(int accountId)
+    {
+        return await _transactionHistoryDal.GetTotalAmountLast24HoursAsync(accountId);
+    }
+
+    public async Task<IEnumerable<LastTransfersDto>> TGetLast5TransfersUsersAsync(int accountId)
+    {
+        return await _transactionHistoryDal.GetLast5TransfersUsersAsync(accountId);
+    }
+
+    public async Task<IEnumerable<TransactionHistory>> TGetPagedTransactionHistoryAsync(int accountId, int page, int pageSize)
+    {
+        return await _transactionHistoryDal.GetPagedTransactionHistoryAsync(accountId, page, pageSize);
     }
 }

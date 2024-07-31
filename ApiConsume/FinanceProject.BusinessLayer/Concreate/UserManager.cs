@@ -69,9 +69,9 @@ namespace FinanceProject.BusinessLayer.Concreate
                 var httpResponse = _httpContextAccessor.HttpContext.Response;
                 httpResponse.Cookies.Append("JWTToken", token, new CookieOptions
                 {
-                    HttpOnly = true, // Sadece HTTP üzerinden erişilebilir
+                    HttpOnly = false, // JavaScript üzerinden erişilebilir
                     Secure = true,   // HTTPS üzerinden iletişimde kullanılabilir (gerektiğinde)
-                    SameSite = SameSiteMode.Strict, // Güvenlik için SameSite ayarı
+                    SameSite = SameSiteMode.None, // Güvenlik için SameSite ayarı
                     Expires = DateTime.UtcNow.AddDays(2) // Token'ın geçerlilik süresi
                 });
 

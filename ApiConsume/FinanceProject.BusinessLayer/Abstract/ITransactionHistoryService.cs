@@ -1,4 +1,5 @@
-﻿using FinanceProject.EntityLayer.Concreate;
+﻿using FinanceProject.DtoLayer.Dtos.TransactionHistoryDto;
+using FinanceProject.EntityLayer.Concreate;
 using System.Threading.Tasks;
 
 namespace FinanceProject.BusinessLayer.Abstract
@@ -12,5 +13,13 @@ namespace FinanceProject.BusinessLayer.Abstract
 
         Task InitiateTransfer(int senderAccountId, string recipientAccountNumber, decimal amount);
         Task Transfer(int senderAccountId, string recipientAccountNumber, decimal amount, string recipientName, string description = null);
+
+        Task<List<TransactionHistory>> TGetLastFiveTransactionsAsync(int accountId);
+
+        Task<decimal> TGetTotalAmountLast24HoursAsync(int accountId);
+
+        Task<IEnumerable<LastTransfersDto>> TGetLast5TransfersUsersAsync(int accountId);
+
+        Task<IEnumerable<TransactionHistory>> TGetPagedTransactionHistoryAsync(int accountId, int page, int pageSize);
     }
 }

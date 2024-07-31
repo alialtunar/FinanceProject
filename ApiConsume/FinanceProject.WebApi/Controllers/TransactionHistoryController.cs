@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using FinanceProject.Core.Exceptions;
+using FinanceProject.DtoLayer.Dtos.TransactionHistoryDto;
 
 namespace FinanceProject.WebApi.Controllers
 {
@@ -41,6 +42,70 @@ namespace FinanceProject.WebApi.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
             }
         }
+
+        [HttpGet("last5/{userId}")]
+        public async Task<IActionResult> GetLastFiveTransactions(int userId)
+        {
+            try
+            {
+                var account = await _accountService.TGetAccountByUserId(userId);
+                var transactions = await _transactionHistoryService.TGetLastFiveTransactionsAsync(account.ID);
+                return Ok(transactions);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Hata: {ex.Message}");
+            }
+        }
+
+
+        [HttpGet("lastUsers/{userId}")]
+        public async Task<IActionResult> GetLastTransferUsers(int userId)
+        {
+            try
+            {
+                var account = await _accountService.TGetAccountByUserId(userId);
+                var transactions = await _transactionHistoryService.TGetLast5TransfersUsersAsync(account.ID);
+                return Ok(transactions);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Hata: {ex.Message}");
+            }
+        }
+
+        [HttpGet("totalamountlast24hours/{userId}")]
+        public async Task<IActionResult> GetTotalAmountLast24Hours(int userId)
+        {
+            try
+            {
+                var account = await _accountService.TGetAccountByUserId(userId);
+                var totalAmount = await _transactionHistoryService.TGetTotalAmountLast24HoursAsync(account.ID);
+                return Ok(totalAmount);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Hata: {ex.Message}");
+            }
+        }
+
+
+        [HttpGet("paged/{userId}")]
+        public async Task<IActionResult> GetPagedTransactionHistory(int userId, int page = 1, int pageSize = 6)
+        {
+            try
+            {
+                var account = await _accountService.TGetAccountByUserId(userId);
+                var transactions = await _transactionHistoryService.TGetPagedTransactionHistoryAsync(account.ID, page, pageSize);
+            return Ok(transactions);
+            }
+            catch(Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
+            }
+           
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> AddTransactionHistory(TransactionHistory transactionHistory)
@@ -116,15 +181,15 @@ namespace FinanceProject.WebApi.Controllers
         }
 
         [HttpPost("InitiateDeposit")]
-        public async Task<IActionResult> InitiateDeposit(int accountId, decimal amount)
+        public async Task<IActionResult> InitiateDeposit([FromBody] DepositeRquestDto request)
         {
             try
             {
-                var code = await _transactionHistoryService.InitiateDeposit(accountId, amount);
+                var account = await _accountService.TGetAccountByUserId(request.userId);
+                var code = await _transactionHistoryService.InitiateDeposit(account.ID, request.amount);
 
                 // Get user's email address from your database using accountId
-                var account = await _accountService.TGetByIdAsync(accountId);
-                var user = await _userService.TGetByIdAsync(account.UserID); // Use UserID to get User
+                var user = await _userService.TGetByIdAsync(request.userId); // Use UserID to get User
                 var userEmailAddress = user.Email; // Assuming you have an Email property in your user object
 
                 var subject = "Deposit Verification Code";
@@ -133,7 +198,7 @@ namespace FinanceProject.WebApi.Controllers
                 // Send email
                 await _emailService.SendEmailAsync(userEmailAddress, subject, body);
 
-                return Ok(new { Code = code });
+                return Ok(new { Message = "Mailinize gelen kodu giriniz" });
             }
             catch (ErrorException ex)
             {
@@ -146,15 +211,13 @@ namespace FinanceProject.WebApi.Controllers
         }
 
         [HttpPost("InitiateWithdraw")]
-        public async Task<IActionResult> InitiateWithdraw(int accountId, decimal amount)
+        public async Task<IActionResult> InitiateWithdraw([FromBody] WithdrawRequestDto request)
         {
             try
             {
-                var code = await _transactionHistoryService.InitiateWithdraw(accountId, amount);
-
-                // Get user's email address from your database using accountId
-                var account = await _accountService.TGetByIdAsync(accountId);
-                var user = await _userService.TGetByIdAsync(account.UserID); // Use UserID to get User
+                var account = await _accountService.TGetAccountByUserId(request.userId);
+                var code = await _transactionHistoryService.InitiateWithdraw(account.ID, request.amount);
+                var user = await _userService.TGetByIdAsync(request.userId); // Use UserID to get User
                 var userEmailAddress = user.Email; // Assuming you have an Email property in your user object
 
                 var subject = "Withdrawal Verification Code";
@@ -163,7 +226,7 @@ namespace FinanceProject.WebApi.Controllers
                 // Send email
                 await _emailService.SendEmailAsync(userEmailAddress, subject, body);
 
-                return Ok(new { Code = code });
+                return Ok(new { Message = "Mailinize gelen kodu giriniz" });
             }
             catch (ErrorException ex)
             {
@@ -176,12 +239,13 @@ namespace FinanceProject.WebApi.Controllers
         }
 
         [HttpPost("Deposit")]
-        public async Task<IActionResult> Deposit(int accountId, decimal amount, string code)
+        public async Task<IActionResult> Deposit([FromBody] DepositeDto request)
         {
             try
             {
-                await _transactionHistoryService.Deposit(accountId, amount, code);
-                return Ok();
+                var account = await _accountService.TGetAccountByUserId(request.userId);
+                await _transactionHistoryService.Deposit(account.ID, request.amount, request.code);
+                return Ok(new { Message = "Para Yatırma Başarılı" });
             }
             catch (ErrorException ex)
             {
@@ -194,12 +258,13 @@ namespace FinanceProject.WebApi.Controllers
         }
 
         [HttpPost("Withdraw")]
-        public async Task<IActionResult> Withdraw(int accountId, decimal amount, string code)
+        public async Task<IActionResult> Withdraw([FromBody] WithdrawDto request)
         {
             try
             {
-                await _transactionHistoryService.Withdraw(accountId, amount, code);
-                return Ok();
+                var account = await _accountService.TGetAccountByUserId(request.userId);
+                await _transactionHistoryService.Withdraw(account.ID, request.amount, request.code);
+                return Ok(new { Message = "Para Çekme Başarılı" });
             }
             catch (ErrorException ex)
             {
@@ -212,12 +277,13 @@ namespace FinanceProject.WebApi.Controllers
         }
 
         [HttpPost("initiate-transfer")]
-        public async Task<IActionResult> InitiateTransfer(int senderAccountId, string recipientAccountNumber, decimal amount)
+        public async Task<IActionResult> InitiateTransfer([FromBody] TransferRequestDto request)
         {
             try
             {
-                await _transactionHistoryService.InitiateTransfer(senderAccountId, recipientAccountNumber, amount);
-                return Ok("Transfer initiated. Please verify the recipient's name.");
+                var account = await _accountService.TGetAccountByUserId(request.userId);
+                await _transactionHistoryService.InitiateTransfer(account.ID, request.recipientAccountNumber, request.amount);
+                return Ok(new { Message = "Alıcınnın Ad Ve Soyadını Girin" });
             }
             catch (ErrorException ex)
             {
@@ -230,12 +296,13 @@ namespace FinanceProject.WebApi.Controllers
         }
 
         [HttpPost("transfer")]
-        public async Task<IActionResult> Transfer(int senderAccountId, string recipientAccountNumber, decimal amount, string recipientName, string description = null)
+        public async Task<IActionResult> Transfer([FromBody] TransferDto request)
         {
             try
             {
-                await _transactionHistoryService.Transfer(senderAccountId, recipientAccountNumber, amount, recipientName, description);
-                return Ok("Transfer successful");
+                var account = await _accountService.TGetAccountByUserId(request.userId);
+                await _transactionHistoryService.Transfer(account.ID, request.recipientAccountNumber, request.amount, request.recipientName, request.description);
+                return Ok(new { Message = "Transfer Başarıyla Tamamlandı" });
             }
             catch (ErrorException ex)
             {

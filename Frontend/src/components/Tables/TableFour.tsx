@@ -52,7 +52,7 @@ const TableFour: React.FC = () => {
         <div className="mb-6 flex justify-between">
           <div>
             <h4 className="text-title-sm2 font-bold text-black dark:text-white">
-              Top Channels
+              Transferler
             </h4>
           </div>
           <DropdownDefault />

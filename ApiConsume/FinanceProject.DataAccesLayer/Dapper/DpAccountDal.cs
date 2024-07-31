@@ -16,6 +16,19 @@ namespace FinanceProject.DataAccesLayer.Dapper
             _dbConnection = connection;
         }
 
+        public async Task<Account> GetAccountByUserId(int userId)
+        {
+            try
+            {
+                var query = "SELECT * FROM Accounts Where UserId = @UserId";
+                return await _dbConnection.QueryFirstOrDefaultAsync<Account>(query, new { userId = userId });
+            }
+            catch(Exception ex)
+            {
+                throw new Exception($"Kullanıcı id'ye göre hesap alınamadı. Hata: {ex.Message}");
+            }
+        }
+
         public async Task<Account> GetByAccountNumberAsync(string accountNumber)
         {
             try

@@ -107,5 +107,23 @@ namespace FinanceProject.WebApi.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
             }
         }
+
+
+        [HttpGet("details/{userId}")]
+        public async Task<IActionResult> GetAccountDetails(int userId)
+        {
+            try
+            {
+                var account = await _accountService.TGetAccountByUserId(userId);
+                var accountDetails = await _accountService.TGetAccountDetailsAsync(account.ID);
+                if (accountDetails == null) return NotFound("Hesap bulunamadı.");
+
+                return Ok(accountDetails);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Hata: {ex.Message}");
+            }
+        }
     }
 }

@@ -7,5 +7,8 @@ namespace FinanceProject.DataAccesLayer.Abstract
     {
         Task<Account> GetByAccountNumberAsync(string accountNumber);
 
+        Task<Account> GetAccountByUserId(int userId);
+
+
     }
 }

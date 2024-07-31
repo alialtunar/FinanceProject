@@ -1,6 +1,8 @@
 ﻿using FinanceProject.BusinessLayer.Abstract;
 using FinanceProject.Core.Exceptions;
 using FinanceProject.DataAccesLayer.Abstract;
+using FinanceProject.DataAccesLayer.Dapper;
+using FinanceProject.DtoLayer.Dtos.AccountDto;
 using FinanceProject.EntityLayer.Concreate;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -12,10 +14,13 @@ namespace FinanceProject.BusinessLayer.Concreate
     public class AccountManager : IAccountService
     {
         private readonly IAccountDal _accountDal;
+        private readonly IUserDal _userDal;
 
-        public AccountManager(IAccountDal accountDal)
+
+        public AccountManager(IAccountDal accountDal, IUserDal userDal)
         {
             _accountDal = accountDal;
+            _userDal = userDal;
         }
 
         public async Task TDeleteAsync(int id)
@@ -99,7 +104,7 @@ namespace FinanceProject.BusinessLayer.Concreate
         }
 
 
-        public async Task<Account> GetByAccountNumberAsync(string accountNumber)
+        public async Task<Account> TGetByAccountNumberAsync(string accountNumber)
         {
             try
             {
@@ -116,6 +121,34 @@ namespace FinanceProject.BusinessLayer.Concreate
         private string GenerateUniqueAccountNumber()
         {
             return Guid.NewGuid().ToString().Replace("-", "").Substring(0, 10).ToUpper();
+        }
+
+        public async Task<Account> TGetAccountByUserId(int userId)
+        {
+            try
+            {
+                return await _accountDal.GetAccountByUserId(userId);
+            }
+            catch(Exception ex) 
+            {
+                throw new ErrorException(StatusCodes.Status500InternalServerError, "User id'ye göre hesap alınamadı. Lütfen tekrar deneyin.");
+            }
+        }
+
+        public async Task<AccountDetailsDto> TGetAccountDetailsAsync(int accountId)
+        {
+            var account = await _accountDal.GetByIdAsync(accountId);
+            if (account == null) return null;
+
+            var user = await _userDal.GetByIdAsync(account.UserID);
+            if (user == null) return null;
+
+            return new AccountDetailsDto
+            {
+                AccountNumber = account.AccountNumber,
+                Balance = account.Balance,
+                FullName = user.FullName
+            };
         }
     }
 }
