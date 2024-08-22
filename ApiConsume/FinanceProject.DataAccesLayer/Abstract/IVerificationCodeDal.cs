@@ -11,5 +11,7 @@ namespace FinanceProject.DataAccesLayer.Abstract
     {
         Task<VerificationCode> GetByCodeAsync(string code);
         Task UpdateAsync(VerificationCode verificationCode);
+
+        Task<IEnumerable<VerificationCode>> GetAdminPagedVerificationCodesAsync(int page, int pageSize);
     }
 }

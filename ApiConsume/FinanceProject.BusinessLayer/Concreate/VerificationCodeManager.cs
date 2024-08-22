@@ -1,5 +1,5 @@
 ﻿using FinanceProject.BusinessLayer.Abstract;
-using FinanceProject.Core.Exceptions;
+using FinanceProject.ApplicationLayer.Exceptions;
 using FinanceProject.DataAccesLayer.Abstract;
 using FinanceProject.EntityLayer.Concreate;
 using Microsoft.AspNetCore.Http;

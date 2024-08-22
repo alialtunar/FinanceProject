@@ -16,6 +16,26 @@ namespace FinanceProject.DataAccesLayer.Dapper
             _connection = connection;
         }
 
+        public async Task<IEnumerable<VerificationCode>> GetAdminPagedVerificationCodesAsync(int page, int pageSize)
+        {
+            var offset = (page - 1) * pageSize;
+
+            var sql = @"
+        SELECT ID, AccountId, Code, Amount, TransactionType, ExpirationTime, IsUsed
+        FROM VerificationCodes
+        ORDER BY ID ASC
+        LIMIT @PageSize OFFSET @Offset";
+
+            var parameters = new
+            {
+                PageSize = pageSize,
+                Offset = offset
+            };
+
+            return await _connection.QueryAsync<VerificationCode>(sql, parameters);
+        }
+
+
         public async Task<VerificationCode> GetByCodeAsync(string code)
         {
             try

@@ -1,13 +1,14 @@
 ﻿using FinanceProject.BusinessLayer.Abstract;
-using FinanceProject.Core.Exceptions;
 using FinanceProject.DataAccesLayer.Abstract;
 using FinanceProject.DataAccesLayer.Dapper;
-using FinanceProject.DtoLayer.Dtos.AccountDto;
+using FinanceProject.ApplicationLayer.Dtos.AccountDto;
 using FinanceProject.EntityLayer.Concreate;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
+using FinanceProject.Application.Models;
 
 namespace FinanceProject.BusinessLayer.Concreate
 {
@@ -15,76 +16,244 @@ namespace FinanceProject.BusinessLayer.Concreate
     {
         private readonly IAccountDal _accountDal;
         private readonly IUserDal _userDal;
+        private readonly BaseResponse _response;
 
-
-        public AccountManager(IAccountDal accountDal, IUserDal userDal)
+        // Constructor now takes BaseResponse as a parameter
+        public AccountManager(IAccountDal accountDal, IUserDal userDal, BaseResponse response)
         {
             _accountDal = accountDal;
             _userDal = userDal;
+            _response = response;
         }
 
-        public async Task TDeleteAsync(int id)
+        public async Task<BaseResponse> TDeleteAsync(int id)
         {
+            var response = _response;
             try
             {
                 await _accountDal.DeleteAsync(id);
+                response.isSuccess = true;
+                response.StatusCode = HttpStatusCode.OK;
+                response.Result = "Hesap başarıyla silindi.";
             }
             catch (Exception)
             {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "Hesap silinemedi. Lütfen tekrar deneyin.");
+                response.isSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.ErrorMessages.Add("Hesap silinemedi. Lütfen tekrar deneyin.");
             }
+            return response;
         }
 
-        public async Task<List<Account>> TGetAllAsync()
+        public async Task<BaseResponse> TGetAllAsync()
         {
+            var response = _response;
             try
             {
-                return await _accountDal.GetAllAsync();
+                var accounts = await _accountDal.GetAllAsync();
+                response.isSuccess = true;
+                response.StatusCode = HttpStatusCode.OK;
+                response.Result = accounts;
             }
             catch (Exception)
             {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "Hesaplar alınamadı. Lütfen tekrar deneyin.");
+                response.isSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.ErrorMessages.Add("Hesaplar alınamadı. Lütfen tekrar deneyin.");
             }
+            return response;
         }
 
-        public async Task<Account> TGetByIdAsync(int id)
+        public async Task<BaseResponse> TGetByIdAsync(int id)
         {
+            var response = _response;
             try
             {
-                return await _accountDal.GetByIdAsync(id);
+                var account = await _accountDal.GetByIdAsync(id);
+                if (account == null)
+                {
+                    response.isSuccess = false;
+                    response.StatusCode = HttpStatusCode.NotFound;
+                    response.ErrorMessages.Add("Hesap bulunamadı.");
+                }
+                else
+                {
+                    response.isSuccess = true;
+                    response.StatusCode = HttpStatusCode.OK;
+                    response.Result = account;
+                }
             }
             catch (Exception)
             {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "Hesap alınamadı. Lütfen tekrar deneyin.");
+                response.isSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.ErrorMessages.Add("Hesap alınamadı. Lütfen tekrar deneyin.");
             }
+            return response;
         }
 
-        public async Task TInsertAsync(Account entity)
+        public async Task<BaseResponse> TInsertAsync(Account entity)
         {
+            var response = _response;
             try
             {
                 await _accountDal.InsertAsync(entity);
+                response.isSuccess = true;
+                response.StatusCode = HttpStatusCode.OK;
+                response.Result = "Hesap başarıyla eklendi.";
             }
             catch (Exception)
             {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "Hesap eklenemedi. Lütfen tekrar deneyin.");
+                response.isSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.ErrorMessages.Add("Hesap eklenemedi. Lütfen tekrar deneyin.");
             }
+            return response;
         }
 
-        public async Task TUpdateAsync(Account entity)
+        public async Task<BaseResponse> TUpdateAsync(Account entity)
         {
+            var response = _response;
             try
             {
                 await _accountDal.UpdateAsync(entity);
+                response.isSuccess = true;
+                response.StatusCode = HttpStatusCode.OK;
+                response.Result = "Hesap başarıyla güncellendi.";
             }
             catch (Exception)
             {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "Hesap güncellenemedi. Lütfen tekrar deneyin.");
+                response.isSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.ErrorMessages.Add("Hesap güncellenemedi. Lütfen tekrar deneyin.");
             }
+            return response;
         }
 
-        public async Task TInsertForUserAsync(int userId)
+        public async Task<BaseResponse> TGetByAccountNumberAsync(string accountNumber)
         {
+            var response = _response;
+            try
+            {
+                var account = await _accountDal.GetByAccountNumberAsync(accountNumber);
+                if (account == null)
+                {
+                    response.isSuccess = false;
+                    response.StatusCode = HttpStatusCode.NotFound;
+                    response.ErrorMessages.Add("Hesap numarasına göre hesap bulunamadı.");
+                }
+                else
+                {
+                    response.isSuccess = true;
+                    response.StatusCode = HttpStatusCode.OK;
+                    response.Result = account;
+                }
+            }
+            catch (Exception)
+            {
+                response.isSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.ErrorMessages.Add("Hesap numarasına göre hesap alınamadı. Lütfen tekrar deneyin.");
+            }
+            return response;
+        }
+
+        public async Task<BaseResponse> TGetAccountByUserId(int userId)
+        {
+            var response = _response;
+            try
+            {
+                var account = await _accountDal.GetAccountByUserId(userId);
+                if (account == null)
+                {
+                    response.isSuccess = false;
+                    response.StatusCode = HttpStatusCode.NotFound;
+                    response.ErrorMessages.Add("Kullanıcı id'sine göre hesap bulunamadı.");
+                }
+                else
+                {
+                    response.isSuccess = true;
+                    response.StatusCode = HttpStatusCode.OK;
+                    response.Result = account;
+                }
+            }
+            catch (Exception)
+            {
+                response.isSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.ErrorMessages.Add("Kullanıcı id'sine göre hesap alınamadı. Lütfen tekrar deneyin.");
+            }
+            return response;
+        }
+
+        public async Task<BaseResponse> TGetAccountDetailsAsync(int accountId)
+        {
+            var response = _response;
+            try
+            {
+                var account = await _accountDal.GetByIdAsync(accountId);
+                if (account == null)
+                {
+                    response.isSuccess = false;
+                    response.StatusCode = HttpStatusCode.NotFound;
+                    response.ErrorMessages.Add("Hesap bulunamadı.");
+                    return response;
+                }
+
+                var user = await _userDal.GetByIdAsync(account.UserID);
+                if (user == null)
+                {
+                    response.isSuccess = false;
+                    response.StatusCode = HttpStatusCode.NotFound;
+                    response.ErrorMessages.Add("Kullanıcı bulunamadı.");
+                    return response;
+                }
+
+                response.isSuccess = true;
+                response.StatusCode = HttpStatusCode.OK;
+                response.Result = new AccountDetailsDto
+                {
+                    AccountNumber = account.AccountNumber,
+                    Balance = account.Balance,
+                    FullName = user.FullName
+                };
+            }
+            catch (Exception)
+            {
+                response.isSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.ErrorMessages.Add("Hesap detayları alınamadı. Lütfen tekrar deneyin.");
+            }
+            return response;
+        }
+
+        public async Task<BaseResponse> TGetAdminPagedAccountsAsync(int page, int pageSize)
+        {
+            var response = _response;
+            try
+            {
+                var accounts = await _accountDal.GetAdminPagedAccountsAsync(page, pageSize);
+                response.isSuccess = true;
+                response.StatusCode = HttpStatusCode.OK;
+                response.Result = accounts;
+            }
+            catch (Exception)
+            {
+                response.isSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.ErrorMessages.Add("Hesaplar alınamadı. Lütfen tekrar deneyin.");
+            }
+            return response;
+        }
+
+        private string GenerateUniqueAccountNumber()
+        {
+            return Guid.NewGuid().ToString().Replace("-", "").Substring(0, 10).ToUpper();
+        }
+
+        public async Task<BaseResponse> TInsertForUserAsync(int userId)
+        {
+            var response = _response;
             try
             {
                 var newAccountNumber = GenerateUniqueAccountNumber();
@@ -95,60 +264,17 @@ namespace FinanceProject.BusinessLayer.Concreate
                     Balance = 0
                 };
                 await _accountDal.InsertAsync(newAccount);
-              
+                response.isSuccess = true;
+                response.StatusCode = HttpStatusCode.OK;
+                response.Result = "Hesap başarıyla oluşturuldu.";
             }
             catch (Exception)
             {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "Hesap oluşturulamadı. Lütfen tekrar deneyin.");
+                response.isSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.ErrorMessages.Add("Hesap oluşturulamadı. Lütfen tekrar deneyin.");
             }
-        }
-
-
-        public async Task<Account> TGetByAccountNumberAsync(string accountNumber)
-        {
-            try
-            {
-                return await _accountDal.GetByAccountNumberAsync(accountNumber);
-            }
-            catch (Exception)
-            {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "Hesap numarasına göre hesap alınamadı. Lütfen tekrar deneyin.");
-            }
-        }
-
-       
-
-        private string GenerateUniqueAccountNumber()
-        {
-            return Guid.NewGuid().ToString().Replace("-", "").Substring(0, 10).ToUpper();
-        }
-
-        public async Task<Account> TGetAccountByUserId(int userId)
-        {
-            try
-            {
-                return await _accountDal.GetAccountByUserId(userId);
-            }
-            catch(Exception ex) 
-            {
-                throw new ErrorException(StatusCodes.Status500InternalServerError, "User id'ye göre hesap alınamadı. Lütfen tekrar deneyin.");
-            }
-        }
-
-        public async Task<AccountDetailsDto> TGetAccountDetailsAsync(int accountId)
-        {
-            var account = await _accountDal.GetByIdAsync(accountId);
-            if (account == null) return null;
-
-            var user = await _userDal.GetByIdAsync(account.UserID);
-            if (user == null) return null;
-
-            return new AccountDetailsDto
-            {
-                AccountNumber = account.AccountNumber,
-                Balance = account.Balance,
-                FullName = user.FullName
-            };
+            return response;
         }
     }
 }

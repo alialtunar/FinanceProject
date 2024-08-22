@@ -2,7 +2,7 @@
 using FinanceProject.DataAccesLayer.Abstract;
 using FinanceProject.DataAccesLayer.Concreate;
 using FinanceProject.DataAccesLayer.Repository;
-using FinanceProject.DtoLayer.Dtos.TransactionHistoryDto;
+using FinanceProject.ApplicationLayer.Dtos.TransactionHistoryDto;
 using FinanceProject.EntityLayer.Concreate;
 using System;
 using System.Collections.Generic;
@@ -22,6 +22,27 @@ namespace FinanceProject.DataAccesLayer.Dapper
         {
             _connection = connection;
         }
+
+
+        public async Task<IEnumerable<TransactionHistory>> GetAdminPagedTransactionHistoryAsync(int page, int pageSize)
+        {
+            var offset = (page - 1) * pageSize;
+
+            var sql = @"
+        SELECT ID, AccountID, TransactionType, Amount, TransactionDate, RecipientAccountNumber, RecipientName, Description
+        FROM TransactionHistory
+        ORDER BY TransactionDate DESC
+        LIMIT @PageSize OFFSET @Offset";
+
+            var parameters = new
+            {
+                PageSize = pageSize,
+                Offset = offset
+            };
+
+            return await _connection.QueryAsync<TransactionHistory>(sql, parameters);
+        }
+
 
         public async Task<decimal> GetTotalAmountLast24HoursAsync(int accountId)
         {
@@ -73,6 +94,41 @@ namespace FinanceProject.DataAccesLayer.Dapper
         }
 
 
+        public async Task<List<TransactionHistory>> GetLastFiveTransactionsAsync()
+        {
+            var sql = @"
+        SELECT * 
+        FROM TransactionHistory 
+        ORDER BY TransactionDate DESC
+        LIMIT 5";
+
+            return (await _connection.QueryAsync<TransactionHistory>(sql)).ToList();
+        }
+
+
+        public async Task<IEnumerable<LastTransfersDto>> GetLast5TransfersUsersAsync()
+        {
+            var sql = @"
+        SELECT u.FullName, a.AccountNumber
+        FROM TransactionHistory th
+        INNER JOIN Accounts a ON th.RecipientAccountNumber = a.AccountNumber
+        INNER JOIN Users u ON a.UserID = u.ID
+        WHERE th.TransactionType::integer = @TransactionType
+        ORDER BY th.TransactionDate DESC
+        LIMIT 5";
+
+            var parameters = new
+            {
+                TransactionType = (int)TransactionType.Transfer // Enum değerini integer'a dönüştürün
+            };
+
+            var result = await _connection.QueryAsync<LastTransfersDto>(sql, parameters);
+            return result ?? Enumerable.Empty<LastTransfersDto>();
+        }
+
+
+
+
         public async Task<IEnumerable<TransactionHistory>> GetPagedTransactionHistoryAsync(int accountId, int page, int pageSize)
         {
             var offset = (page - 1) * pageSize;
@@ -98,14 +154,15 @@ namespace FinanceProject.DataAccesLayer.Dapper
         public async Task<decimal> GetTransactionVolumeLast24Hours()
         {
             string query = @"
-                SELECT SUM(Amount) 
-                FROM TransactionHistory 
-                WHERE TransactionDate >= @StartDate";
+        SELECT COALESCE(SUM(Amount), 0) 
+        FROM TransactionHistory 
+        WHERE TransactionDate >= @StartDate";
 
             var parameters = new { StartDate = DateTime.Now.AddHours(-24) };
 
             return await _connection.QueryFirstOrDefaultAsync<decimal>(query, parameters);
         }
+
 
 
     }

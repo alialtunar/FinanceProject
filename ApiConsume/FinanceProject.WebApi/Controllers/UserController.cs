@@ -1,10 +1,10 @@
 ﻿using FinanceProject.BusinessLayer.Abstract;
-using FinanceProject.DtoLayer.Dtos.UserDto;
+using FinanceProject.ApplicationLayer.Dtos.UserDto;
 using FinanceProject.EntityLayer.Concreate;
-using FinanceProject.Core.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using FinanceProject.Application.Models;
 
 namespace FinanceProject.WebApi.Controllers
 {
@@ -20,146 +20,116 @@ namespace FinanceProject.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> UserList()
+        public async Task<ActionResult> UserList()
         {
-            try
+            var response = await _userService.TGetAllAsync();
+            if (!response.isSuccess)
             {
-                var values = await _userService.TGetAllAsync();
-                return Ok(values);
+                return StatusCode(StatusCodes.Status500InternalServerError, response);
             }
-            catch (ErrorException ex)
+            return Ok(response);
+        }
+
+        [HttpGet("Admin/paged")]
+        public async Task<ActionResult> GetPagedUsers(int page = 1, int pageSize = 6)
+        {
+            var response = await _userService.TGetAdminPagedUsersAsync(page, pageSize);
+            if (!response.isSuccess)
             {
-                return StatusCode(ex.StatusCode, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, response);
             }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Kullanıcılar alınamadı. Lütfen tekrar deneyin.");
-            }
+            return Ok(response);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUser(User user)
+        public async Task<ActionResult> AddUser([FromBody] User user)
         {
-            try
+            var response = await _userService.TInsertAsync(user);
+            if (!response.isSuccess)
             {
-                await _userService.TInsertAsync(user);
-                return Ok();
+                return BadRequest(response);
             }
-            catch (ErrorException ex)
-            {
-                return StatusCode(ex.StatusCode, ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Kullanıcı eklenemedi. Lütfen tekrar deneyin.");
-            }
+            return Ok(response);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<ActionResult> DeleteUser(int id)
         {
-            try
+            var response = await _userService.TDeleteAsync(id);
+            if (!response.isSuccess)
             {
-                await _userService.TDeleteAsync(id);
-                return Ok();
+                return StatusCode(StatusCodes.Status500InternalServerError, response);
             }
-            catch (ErrorException ex)
-            {
-                return StatusCode(ex.StatusCode, ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Kullanıcı silinemedi. Lütfen tekrar deneyin.");
-            }
+            return NoContent();
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateUser(User user)
+        public async Task<ActionResult> UpdateUser([FromBody] User user)
         {
-            try
+            var response = await _userService.TUpdateAsync(user);
+            if (!response.isSuccess)
             {
-                await _userService.TUpdateAsync(user);
-                return Ok();
+                return StatusCode(StatusCodes.Status500InternalServerError, response);
             }
-            catch (ErrorException ex)
-            {
-                return StatusCode(ex.StatusCode, ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Kullanıcı güncellenemedi. Lütfen tekrar deneyin.");
-            }
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUser(int id)
+        public async Task<ActionResult> GetUser(int id)
         {
-            try
+            var response = await _userService.TGetByIdAsync(id);
+            if (!response.isSuccess)
             {
-                var value = await _userService.TGetByIdAsync(id);
-                return Ok(value);
+                return StatusCode(StatusCodes.Status500InternalServerError, response);
             }
-            catch (ErrorException ex)
-            {
-                return StatusCode(ex.StatusCode, ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Kullanıcı alınamadı. Lütfen tekrar deneyin.");
-            }
+            return Ok(response);
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(UserRegisterDto userRegisterDto)
+        public async Task<ActionResult> Register([FromBody] UserRegisterDto userRegisterDto)
         {
-            try
+            var response = await _userService.TRegisterAsync(userRegisterDto);
+            if (!response.isSuccess)
             {
-                await _userService.TRegisterAsync(userRegisterDto);
-                return Ok();
+                return StatusCode(StatusCodes.Status500InternalServerError, response);
             }
-            catch (ErrorException ex)
-            {
-                return StatusCode(ex.StatusCode, ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Kullanıcı kaydedilemedi. Lütfen tekrar deneyin.");
-            }
+            return Ok(response);
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(UserLoginDto userLoginDto)
+        public async Task<ActionResult> Login([FromBody] UserLoginDto userLoginDto)
         {
-            try
+            var response = await _userService.TLoginAsync(userLoginDto);
+            if (!response.isSuccess)
             {
-                var user = await _userService.TLoginAsync(userLoginDto);
-                if (user == null) return Unauthorized();
+                return StatusCode(StatusCodes.Status500InternalServerError, response);
+            }
 
-                // Kullanıcı bilgilerini döndür
-                return Ok(new
+            var user = response.Result as User;
+
+            return Ok(new BaseResponse
+            {
+                isSuccess = true,
+                Result = new
                 {
                     user.ID,
                     user.Email,
                     user.FullName,
                     user.Phone,
                     user.Role
-                });
-            }
-            catch (ErrorException ex)
-            {
-                return StatusCode(ex.StatusCode, ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Kullanıcı giriş yapamadı. Lütfen tekrar deneyin.");
-            }
+                }
+            });
         }
 
         [HttpGet("user-count")]
-        public async Task<IActionResult> GetTotalUserCount()
+        public async Task<ActionResult> GetTotalUserCount()
         {
-            var count = await _userService.TGetTotalUserCount();
-            return Ok(count);
+            var response = await _userService.TGetTotalUserCount();
+            if (!response.isSuccess)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response);
+            }
+            return Ok(response);
         }
     }
 }

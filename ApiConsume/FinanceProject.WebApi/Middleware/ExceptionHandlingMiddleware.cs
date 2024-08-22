@@ -1,4 +1,4 @@
-﻿using FinanceProject.Core.Exceptions;
+﻿using FinanceProject.ApplicationLayer.Exceptions;
 
 // ExceptionHandlingMiddleware.cs
 

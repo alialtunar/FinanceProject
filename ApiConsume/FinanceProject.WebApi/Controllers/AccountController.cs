@@ -1,9 +1,7 @@
 ﻿using FinanceProject.BusinessLayer.Abstract;
 using FinanceProject.EntityLayer.Concreate;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using FinanceProject.Core.Exceptions;
 
 namespace FinanceProject.WebApi.Controllers
 {
@@ -19,111 +17,92 @@ namespace FinanceProject.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> AccountList()
+        public async Task<ActionResult> AccountList()
         {
-            try
+            var response = await _accountService.TGetAllAsync();
+            if (!response.isSuccess)
             {
-                var values = await _accountService.TGetAllAsync();
-                return Ok(values);
+                return BadRequest(response);
             }
-            catch (ErrorException ex)
+            return Ok(response);
+        }
+
+        [HttpGet("Admin/paged")]
+        public async Task<ActionResult> GetPagedAccounts(int page = 1, int pageSize = 6)
+        {
+            var response = await _accountService.TGetAdminPagedAccountsAsync(page, pageSize);
+            if (!response.isSuccess)
             {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
+                return BadRequest(response);
             }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
+            return Ok(response);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddAccount(Account account)
+        public async Task<ActionResult> AddAccount([FromBody] Account account)
         {
-            try
+            var response = await _accountService.TInsertAsync(account);
+            if (!response.isSuccess)
             {
-                await _accountService.TInsertAsync(account);
-                return Ok();
+                return BadRequest(response);
             }
-            catch (ErrorException ex)
-            {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
+            return Ok(response);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAccount(int id)
+        public async Task<ActionResult> DeleteAccount(int id)
         {
-            try
+            var response = await _accountService.TDeleteAsync(id);
+            if (!response.isSuccess)
             {
-                await _accountService.TDeleteAsync(id);
-                return Ok();
+                return BadRequest(response);
             }
-            catch (ErrorException ex)
-            {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
+            return NoContent();
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateAccount(Account account)
+        public async Task<ActionResult> UpdateAccount([FromBody] Account account)
         {
-            try
+            var response = await _accountService.TUpdateAsync(account);
+            if (!response.isSuccess)
             {
-                await _accountService.TUpdateAsync(account);
-                return Ok();
+                return BadRequest(response);
             }
-            catch (ErrorException ex)
-            {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetAccount(int id)
+        public async Task<ActionResult> GetAccount(int id)
         {
-            try
+            var response = await _accountService.TGetByIdAsync(id);
+            if (!response.isSuccess)
             {
-                var value = await _accountService.TGetByIdAsync(id);
-                return Ok(value);
+                return BadRequest(response);
             }
-            catch (ErrorException ex)
-            {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
+            return Ok(response);
         }
-
 
         [HttpGet("details/{userId}")]
-        public async Task<IActionResult> GetAccountDetails(int userId)
-        {
-            try
-            {
-                var account = await _accountService.TGetAccountByUserId(userId);
-                var accountDetails = await _accountService.TGetAccountDetailsAsync(account.ID);
-                if (accountDetails == null) return NotFound("Hesap bulunamadı.");
+public async Task<ActionResult> GetAccountDetails(int userId)
+{
+    var accountResponse = await _accountService.TGetAccountByUserId(userId);
+    if (!accountResponse.isSuccess)
+    {
+        return BadRequest(accountResponse);
+    }
 
-                return Ok(accountDetails);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Hata: {ex.Message}");
-            }
-        }
+
+    var account = accountResponse.Result as Account;
+
+
+    var accountDetailsResponse = await _accountService.TGetAccountDetailsAsync(account.ID);
+    if (!accountDetailsResponse.isSuccess)
+    {
+        return BadRequest(accountDetailsResponse);
+    }
+
+    return Ok(accountDetailsResponse);
+}
+
     }
 }

@@ -3,8 +3,9 @@ using FinanceProject.EntityLayer.Concreate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using FinanceProject.Core.Exceptions;
-using FinanceProject.DtoLayer.Dtos.TransactionHistoryDto;
+using FinanceProject.ApplicationLayer.Exceptions;
+using FinanceProject.ApplicationLayer.Dtos.TransactionHistoryDto;
+using FinanceProject.Application.Models;
 
 namespace FinanceProject.WebApi.Controllers
 {
@@ -26,298 +27,317 @@ namespace FinanceProject.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> TransactionHistoryList()
+        public async Task<ActionResult> TransactionHistoryList()
         {
-            try
+            var response = await _transactionHistoryService.TGetAllAsync();
+            if (!response.isSuccess)
             {
-                var values = await _transactionHistoryService.TGetAllAsync();
-                return Ok(values);
+                return BadRequest( response);
             }
-            catch (ErrorException ex)
+            return Ok(response);
+        }
+
+        [HttpGet("admin/paged")]
+        public async Task<ActionResult> GetPagedTransactionHistory(int page = 1, int pageSize = 6)
+        {
+            var response = await _transactionHistoryService.TGetAdminPagedTransactionHistoryAsync(page, pageSize);
+            if (!response.isSuccess)
             {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
+                return BadRequest( response);
             }
-            catch (Exception)
+            return Ok(response);
+        }
+
+        [HttpGet("last5")]
+        public async Task<ActionResult> GetLastFiveTransactions()
+        {
+            var response = await _transactionHistoryService.TGetLastFiveTransactionsAsync();
+            if (!response.isSuccess)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
+                return BadRequest( response);
             }
+            return Ok(response);
+        }
+
+        [HttpGet("lastUsers")]
+        public async Task<ActionResult> GetLastTransferUsers()
+        {
+            var response = await _transactionHistoryService.TGetLast5TransfersAllUsersAsync();
+            if (!response.isSuccess)
+            {
+                return BadRequest( response);
+            }
+            return Ok(response);
         }
 
         [HttpGet("last5/{userId}")]
-        public async Task<IActionResult> GetLastFiveTransactions(int userId)
+        public async Task<ActionResult> GetLastFiveTransactions(int userId)
         {
-            try
+            var accountResponse = await _accountService.TGetAccountByUserId(userId);
+            if (!accountResponse.isSuccess)
             {
-                var account = await _accountService.TGetAccountByUserId(userId);
-                var transactions = await _transactionHistoryService.TGetLastFiveTransactionsAsync(account.ID);
-                return Ok(transactions);
+                return BadRequest( accountResponse);
             }
-            catch (Exception ex)
+
+            var account = accountResponse.Result as Account;
+            var transactions = await _transactionHistoryService.TGetLastFiveTransactionsAsync(account.ID);
+            if (!transactions.isSuccess)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Hata: {ex.Message}");
+                return BadRequest( transactions);
             }
+            return Ok(transactions);
         }
 
-
         [HttpGet("lastUsers/{userId}")]
-        public async Task<IActionResult> GetLastTransferUsers(int userId)
+        public async Task<ActionResult> GetLastTransferUsers(int userId)
         {
-            try
+            var accountResponse = await _accountService.TGetAccountByUserId(userId);
+            if (!accountResponse.isSuccess)
             {
-                var account = await _accountService.TGetAccountByUserId(userId);
-                var transactions = await _transactionHistoryService.TGetLast5TransfersUsersAsync(account.ID);
-                return Ok(transactions);
+                return BadRequest( accountResponse);
             }
-            catch (Exception ex)
+
+            var account = accountResponse.Result as Account;
+            var transactions = await _transactionHistoryService.TGetLast5TransfersUsersAsync(account.ID);
+            if (!transactions.isSuccess)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Hata: {ex.Message}");
+                return BadRequest( transactions);
             }
+            return Ok(transactions);
         }
 
         [HttpGet("totalamountlast24hours/{userId}")]
-        public async Task<IActionResult> GetTotalAmountLast24Hours(int userId)
+        public async Task<ActionResult> GetTotalAmountLast24Hours(int userId)
         {
-            try
+            var accountResponse = await _accountService.TGetAccountByUserId(userId);
+            if (!accountResponse.isSuccess)
             {
-                var account = await _accountService.TGetAccountByUserId(userId);
-                var totalAmount = await _transactionHistoryService.TGetTotalAmountLast24HoursAsync(account.ID);
-                return Ok(totalAmount);
+                return BadRequest( accountResponse);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Hata: {ex.Message}");
-            }
-        }
 
+            var account = accountResponse.Result as Account;
+            var totalAmount = await _transactionHistoryService.TGetTotalAmountLast24HoursAsync(account.ID);
+            if (!totalAmount.isSuccess)
+            {
+                return BadRequest( totalAmount);
+            }
+            return Ok(totalAmount);
+        }
 
         [HttpGet("paged/{userId}")]
-        public async Task<IActionResult> GetPagedTransactionHistory(int userId, int page = 1, int pageSize = 6)
+        public async Task<ActionResult> GetPagedTransactionHistory(int userId, int page = 1, int pageSize = 6)
         {
-            try
+            var accountResponse = await _accountService.TGetAccountByUserId(userId);
+            if (!accountResponse.isSuccess)
             {
-                var account = await _accountService.TGetAccountByUserId(userId);
-                var transactions = await _transactionHistoryService.TGetPagedTransactionHistoryAsync(account.ID, page, pageSize);
+                return BadRequest( accountResponse);
+            }
+
+            var account = accountResponse.Result as Account;
+            var transactions = await _transactionHistoryService.TGetPagedTransactionHistoryAsync(account.ID, page, pageSize);
+            if (!transactions.isSuccess)
+            {
+                return BadRequest( transactions);
+            }
             return Ok(transactions);
-            }
-            catch(Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
-           
         }
 
-
         [HttpPost]
-        public async Task<IActionResult> AddTransactionHistory(TransactionHistory transactionHistory)
+        public async Task<ActionResult> AddTransactionHistory(TransactionHistory transactionHistory)
         {
-            try
+            var response = await _transactionHistoryService.TInsertAsync(transactionHistory);
+            if (!response.isSuccess)
             {
-                await _transactionHistoryService.TInsertAsync(transactionHistory);
-                return Ok();
+                return BadRequest( response);
             }
-            catch (ErrorException ex)
-            {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
+            return Ok();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTransactionHistory(int id)
+        public async Task<ActionResult> DeleteTransactionHistory(int id)
         {
-            try
+            var value = await _transactionHistoryService.TGetByIdAsync(id);
+            if (!value.isSuccess)
             {
-                var value = await _transactionHistoryService.TGetByIdAsync(id);
-                await _transactionHistoryService.TDeleteAsync(value.ID);
-                return Ok();
+                return BadRequest( value);
             }
-            catch (ErrorException ex)
+
+            var transaction = value.Result as TransactionHistory;
+            var deleteResponse = await _transactionHistoryService.TDeleteAsync(transaction.ID);
+            if (!deleteResponse.isSuccess)
             {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
+                return BadRequest(deleteResponse);
             }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
+            return Ok();
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateTransactionHistory(TransactionHistory transactionHistory)
+        public async Task<ActionResult> UpdateTransactionHistory(TransactionHistory transactionHistory)
         {
-            try
+            var response = await _transactionHistoryService.TUpdateAsync(transactionHistory);
+            if (!response.isSuccess)
             {
-                await _transactionHistoryService.TUpdateAsync(transactionHistory);
-                return Ok();
+                return BadRequest(response);
             }
-            catch (ErrorException ex)
-            {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
+            return Ok();
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetTransactionHistory(int id)
+        public async Task<ActionResult> GetTransactionHistory(int id)
         {
-            try
+            var value = await _transactionHistoryService.TGetByIdAsync(id);
+            if (!value.isSuccess)
             {
-                var value = await _transactionHistoryService.TGetByIdAsync(id);
-                return Ok(value);
+                return BadRequest(value);
             }
-            catch (ErrorException ex)
-            {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
+            return Ok(value);
         }
 
         [HttpPost("InitiateDeposit")]
-        public async Task<IActionResult> InitiateDeposit([FromBody] DepositeRquestDto request)
+        public async Task<ActionResult> InitiateDeposit([FromBody] DepositeRquestDto request)
         {
-            try
+            var accountResponse = await _accountService.TGetAccountByUserId(request.userId);
+            if (!accountResponse.isSuccess)
             {
-                var account = await _accountService.TGetAccountByUserId(request.userId);
-                var code = await _transactionHistoryService.InitiateDeposit(account.ID, request.amount);
-
-                // Get user's email address from your database using accountId
-                var user = await _userService.TGetByIdAsync(request.userId); // Use UserID to get User
-                var userEmailAddress = user.Email; // Assuming you have an Email property in your user object
-
-                var subject = "Deposit Verification Code";
-                var body = $"Your deposit verification code is: {code}";
-
-                // Send email
-                await _emailService.SendEmailAsync(userEmailAddress, subject, body);
-
-                return Ok(new { Message = "Mailinize gelen kodu giriniz" });
+                return BadRequest(accountResponse);
             }
-            catch (ErrorException ex)
+
+            var account = accountResponse.Result as Account;
+            var result = await _transactionHistoryService.InitiateDeposit(account.ID, request.amount);
+            var code = result.Result as string;
+            var response = await _userService.TGetByIdAsync(request.userId);
+            if (!response.isSuccess)
             {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
+                return BadRequest(response);
             }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
+
+            var user = response.Result as User;
+            var userEmailAddress = user.Email;
+
+            var subject = "Deposit Verification Code";
+            var body = $"Your deposit verification code is: {code}";
+
+            await _emailService.SendEmailAsync(userEmailAddress, subject, body);
+
+            return Ok(new { Message = "Mailinize gelen kodu giriniz" });
         }
 
         [HttpPost("InitiateWithdraw")]
-        public async Task<IActionResult> InitiateWithdraw([FromBody] WithdrawRequestDto request)
+        public async Task<ActionResult> InitiateWithdraw([FromBody] WithdrawRequestDto request)
         {
-            try
+            var accountResponse = await _accountService.TGetAccountByUserId(request.userId);
+            if (!accountResponse.isSuccess)
             {
-                var account = await _accountService.TGetAccountByUserId(request.userId);
-                var code = await _transactionHistoryService.InitiateWithdraw(account.ID, request.amount);
-                var user = await _userService.TGetByIdAsync(request.userId); // Use UserID to get User
-                var userEmailAddress = user.Email; // Assuming you have an Email property in your user object
-
-                var subject = "Withdrawal Verification Code";
-                var body = $"Your withdrawal verification code is: {code}";
-
-                // Send email
-                await _emailService.SendEmailAsync(userEmailAddress, subject, body);
-
-                return Ok(new { Message = "Mailinize gelen kodu giriniz" });
+                return BadRequest(accountResponse);
             }
-            catch (ErrorException ex)
+
+            var account = accountResponse.Result as Account;
+            var result = await _transactionHistoryService.InitiateWithdraw(account.ID, request.amount);
+            var code = result.Result as string;
+            if (!result.isSuccess)
             {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
+                return BadRequest(result);
             }
-            catch (Exception)
+
+            var response = await _userService.TGetByIdAsync(request.userId);
+            if (!response.isSuccess)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
+                return BadRequest(response);
             }
+
+            var user = response.Result as User;
+            var userEmailAddress = user.Email;
+
+            var subject = "Withdrawal Verification Code";
+            var body = $"Your withdrawal verification code is: {code}"; // Ensure this is the code
+
+            await _emailService.SendEmailAsync(userEmailAddress, subject, body);
+
+            return Ok(new { Message = "Mailinize gelen kodu giriniz" });
         }
 
+
         [HttpPost("Deposit")]
-        public async Task<IActionResult> Deposit([FromBody] DepositeDto request)
+        public async Task<ActionResult> Deposit([FromBody] DepositeDto request)
         {
-            try
+            var accountResponse = await _accountService.TGetAccountByUserId(request.userId);
+            if (!accountResponse.isSuccess)
             {
-                var account = await _accountService.TGetAccountByUserId(request.userId);
-                await _transactionHistoryService.Deposit(account.ID, request.amount, request.code);
-                return Ok(new { Message = "Para Yatırma Başarılı" });
+                return BadRequest(accountResponse);
             }
-            catch (ErrorException ex)
+
+            var account = accountResponse.Result as Account;
+            var response = await _transactionHistoryService.Deposit(account.ID, request.amount, request.code);
+            if (!response.isSuccess)
             {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
+                return BadRequest(response);
             }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
+            return Ok(new { Message = "Para Yatırma Başarılı" });
         }
 
         [HttpPost("Withdraw")]
-        public async Task<IActionResult> Withdraw([FromBody] WithdrawDto request)
+        public async Task<ActionResult> Withdraw([FromBody] WithdrawDto request)
         {
-            try
+            var accountResponse = await _accountService.TGetAccountByUserId(request.userId);
+            if (!accountResponse.isSuccess)
             {
-                var account = await _accountService.TGetAccountByUserId(request.userId);
-                await _transactionHistoryService.Withdraw(account.ID, request.amount, request.code);
-                return Ok(new { Message = "Para Çekme Başarılı" });
+                return BadRequest(accountResponse);
             }
-            catch (ErrorException ex)
+
+            var account = accountResponse.Result as Account;
+            var response = await _transactionHistoryService.Withdraw(account.ID, request.amount, request.code);
+            if (!response.isSuccess)
             {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
+                return BadRequest(response);
             }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
+            return Ok(new { Message = "Para Çekme Başarılı" });
         }
 
         [HttpPost("initiate-transfer")]
-        public async Task<IActionResult> InitiateTransfer([FromBody] TransferRequestDto request)
+        public async Task<ActionResult> InitiateTransfer([FromBody] TransferRequestDto request)
         {
-            try
+            var accountResponse = await _accountService.TGetAccountByUserId(request.userId);
+            if (!accountResponse.isSuccess)
             {
-                var account = await _accountService.TGetAccountByUserId(request.userId);
-                await _transactionHistoryService.InitiateTransfer(account.ID, request.recipientAccountNumber, request.amount);
-                return Ok(new { Message = "Alıcınnın Ad Ve Soyadını Girin" });
+                return BadRequest(accountResponse);
             }
-            catch (ErrorException ex)
+
+            var account = accountResponse.Result as Account;
+            var response = await _transactionHistoryService.InitiateTransfer(account.ID, request.recipientAccountNumber, request.amount);
+            if (!response.isSuccess)
             {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
+                return BadRequest(response);
             }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
+            return Ok(new { Message = "Alıcının Ad ve Soyadını Girin" });
         }
 
         [HttpPost("transfer")]
-        public async Task<IActionResult> Transfer([FromBody] TransferDto request)
+        public async Task<ActionResult> Transfer([FromBody] TransferDto request)
         {
-            try
+            var accountResponse = await _accountService.TGetAccountByUserId(request.userId);
+            if (!accountResponse.isSuccess)
             {
-                var account = await _accountService.TGetAccountByUserId(request.userId);
-                await _transactionHistoryService.Transfer(account.ID, request.recipientAccountNumber, request.amount, request.recipientName, request.description);
-                return Ok(new { Message = "Transfer Başarıyla Tamamlandı" });
+                return BadRequest(accountResponse);
             }
-            catch (ErrorException ex)
+
+            var account = accountResponse.Result as Account;
+            var response = await _transactionHistoryService.Transfer(account.ID, request.recipientAccountNumber, request.amount, request.recipientName, request.description);
+            if (!response.isSuccess)
             {
-                return StatusCode(ex.StatusCode, new { Message = ex.Message });
+                return BadRequest(response);
             }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Bir hata oluştu. Lütfen tekrar deneyin." });
-            }
+            return Ok(response);
         }
+
 
         [HttpGet("transaction-volume")]
         public async Task<IActionResult> GetTransactionVolumeLast24Hours()
         {
             var volume = await _transactionHistoryService.TGetTransactionVolumeLast24Hours();
+            if (!volume.isSuccess)
+            {
+                return BadRequest(volume);
+            }
             return Ok(volume);
         }
     }

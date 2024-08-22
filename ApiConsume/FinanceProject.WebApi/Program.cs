@@ -1,3 +1,4 @@
+using FinanceProject.Application.Models;
 using FinanceProject.BusinessLayer.Abstract;
 using FinanceProject.BusinessLayer.Concreate;
 using FinanceProject.BusinessLayer.Concreate.Jwt;
@@ -78,6 +79,9 @@ builder.Services.AddScoped<IAccountService, AccountManager>();
 builder.Services.AddScoped<ITransactionHistoryService, TransactionHistoryManager>();
 builder.Services.AddScoped<IVerificationCodeService, VerificationCodeManager>();
 builder.Services.AddScoped<IEmailService, EmailManager>();
+
+builder.Services.AddScoped(typeof(BaseResponse));
+
 
 builder.Services.AddScoped<JwtService>();
 

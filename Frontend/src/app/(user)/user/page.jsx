@@ -10,7 +10,11 @@ const fetchTransactionVolumeLast24Hours = async (userId) => {
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  return response.json();
+  const data = await response.json();
+  if (!data.isSuccess) {
+    throw new Error(data.errorMessages.join(', '));
+  }
+  return data.result;
 };
 
 const fetchAccountDetails = async (userId) => {
@@ -18,7 +22,11 @@ const fetchAccountDetails = async (userId) => {
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  return response.json();
+  const data = await response.json();
+  if (!data.isSuccess) {
+    throw new Error(data.errorMessages.join(', '));
+  }
+  return data.result;
 };
 
 const fetchLast5Transaction = async (userId) => {
@@ -26,7 +34,11 @@ const fetchLast5Transaction = async (userId) => {
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  return response.json();
+  const data = await response.json();
+  if (!data.isSuccess) {
+    throw new Error(data.errorMessages.join(', '));
+  }
+  return data.result;
 };
 
 const fetchLast5TransferUsers = async (userId) => {
@@ -34,7 +46,11 @@ const fetchLast5TransferUsers = async (userId) => {
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  return response.json();
+  const data = await response.json();
+  if (!data.isSuccess) {
+    throw new Error(data.errorMessages.join(', '));
+  }
+  return data.result;
 };
 
 const Page = () => {

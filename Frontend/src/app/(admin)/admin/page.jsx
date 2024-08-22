@@ -5,12 +5,16 @@ import { useAuth } from '@/hooks/useAuth';
 
 const API_URL = 'http://localhost:5233/api';
 
-const TotalUsers = async () => {
+const fetchTotalUsers = async () => {
   const response = await fetch(`${API_URL}/User/user-count`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  return response.json();
+  const data = await response.json();
+  if (!data.isSuccess) {
+    throw new Error(data.errorMessages.join(', '));
+  }
+  return data.result;
 };
 
 const fetchTransactionVolumeLast24Hours = async () => {
@@ -18,33 +22,47 @@ const fetchTransactionVolumeLast24Hours = async () => {
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  return response.json();
+  const data = await response.json();
+  if (!data.isSuccess) {
+    throw new Error(data.errorMessages.join(', '));
+  }
+  return data.result;
 };
-
-
 
 const fetchAccountDetails = async (userId) => {
   const response = await fetch(`${API_URL}/account/details/${userId}`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  return response.json();
+  const data = await response.json();
+  if (!data.isSuccess) {
+    throw new Error(data.errorMessages.join(', '));
+  }
+  return data.result;
 };
 
-const fetchLast5Transaction = async (userId) => {
-  const response = await fetch(`${API_URL}/TransactionHistory/last5/${userId}`);
+const fetchLast5Transaction = async () => {
+  const response = await fetch(`${API_URL}/TransactionHistory/last5/`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  return response.json();
+  const data = await response.json();
+  if (!data.isSuccess) {
+    throw new Error(data.errorMessages.join(', '));
+  }
+  return data.result;
 };
 
-const fetchLast5TransferUsers = async (userId) => {
-  const response = await fetch(`${API_URL}/TransactionHistory/lastUsers/${userId}`);
+const fetchLast5TransferUsers = async () => {
+  const response = await fetch(`${API_URL}/TransactionHistory/lastUsers/`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  return response.json();
+  const data = await response.json();
+  if (!data.isSuccess) {
+    throw new Error(data.errorMessages.join(', '));
+  }
+  return data.result;
 };
 
 const Page = () => {
@@ -52,27 +70,30 @@ const Page = () => {
   const [accountDetails, setAccountDetails] = useState(null);
   const [last5Transactions, setLast5Transactions] = useState([]);
   const [last5TransferUsers, setLast5TransferUsers] = useState([]);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState(null);
 
-  const token = useAuth(); 
+  const token = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
       if (token && token.nameid) {
         setStatus('loading');
         try {
-          const [volume, account, transactions, users] = await Promise.all([
+          const [volume, account, transactions, users, totalUsers] = await Promise.all([
             fetchTransactionVolumeLast24Hours(),
             fetchAccountDetails(token.nameid),
             fetchLast5Transaction(token.nameid),
             fetchLast5TransferUsers(token.nameid),
+            fetchTotalUsers(),
           ]);
 
           setTransactionVolume(volume);
           setAccountDetails(account);
           setLast5Transactions(transactions);
           setLast5TransferUsers(users);
+          setTotalUsers(totalUsers);
           setStatus('succeeded');
         } catch (err) {
           setStatus('failed');
@@ -100,6 +121,7 @@ const Page = () => {
           accountDetails={accountDetails} 
           last5Transactions={last5Transactions} 
           last5TransferUsers={last5TransferUsers}
+          totalUsers={totalUsers}
         />
       </div>
     );

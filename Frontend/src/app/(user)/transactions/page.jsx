@@ -11,50 +11,59 @@ const TransactionHistoryPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(5);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [hasLoaded, setHasLoaded] = useState(false); 
+  const [error, setError] = useState('');
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
-   
-    if (auth && auth.nameid) {
-      const fetchTransactions = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-          const response = await fetch(`${API_URL}/${auth.nameid}?page=${page}&pageSize=${pageSize}`);
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          const data = await response.json();
-          setTransactions(data);
-        } catch (err) {
-          setError(err.message);
-        } finally {
-          setLoading(false);
-          setHasLoaded(true); 
-        }
-      };
+    const fetchTransactions = async () => {
+      if (!auth?.nameid) return;
 
-      fetchTransactions();
-    }
+      setLoading(true);
+      setError('');
+      setHasLoaded(false);
+
+      try {
+        const response = await fetch(`${API_URL}/${auth.nameid}?page=${page}&pageSize=${pageSize}`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const result = await response.json();
+        if (result.isSuccess) {
+          setTransactions(result.result);
+        } else {
+          throw new Error(result.errorMessages.join(', ') || 'An error occurred while fetching transactions.');
+        }
+      } catch (err) {
+        setError(err.message || 'An error occurred while fetching transactions.');
+      } finally {
+        setLoading(false);
+        setHasLoaded(true);
+      }
+    };
+
+    fetchTransactions();
   }, [auth?.nameid, page, pageSize]);
 
-
   const handlePreviousPage = () => {
-    setPage((prevPage) => (prevPage > 1 ? prevPage - 1 : 1));
+    setPage(prevPage => Math.max(prevPage - 1, 1));
   };
 
   const handleNextPage = () => {
-    setPage((prevPage) => prevPage + 1);
+    setPage(prevPage => prevPage + 1);
   };
 
-  // Eğer veri hala yüklenmiyorsa ve `auth` mevcut değilse, kullanıcıya bir yüklenme ekranı gösterebilirsiniz
-  if (!auth || !auth.nameid) return <p>Loading authentication...</p>;
+  if (!auth?.nameid) return <p>Loading authentication...</p>;
   if (loading) return <p>Loading transactions...</p>;
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <TableOne transactions={transactions} handlePreviousPage={handlePreviousPage} handleNextPage={handleNextPage} page={page}/>
+    <TableOne 
+      transactions={transactions} 
+      handlePreviousPage={handlePreviousPage} 
+      handleNextPage={handleNextPage} 
+      page={page}
+      hasLoaded={hasLoaded} // Pass hasLoaded if needed in TableOne
+    />
   );
 };
 

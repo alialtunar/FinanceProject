@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FinanceProject.BusinessLayer\FinanceProject.BusinessLayer.csproj" />
-    <ProjectReference Include="..\FinanceProject.Core\FinanceProject.Core.csproj" />
     <ProjectReference Include="..\FinanceProject.DataAccesLayer\FinanceProject.DataAccesLayer.csproj" />
   </ItemGroup>
 

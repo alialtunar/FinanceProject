@@ -1,4 +1,4 @@
-﻿using FinanceProject.DtoLayer.Dtos.UserDto;
+﻿using FinanceProject.ApplicationLayer.Dtos.UserDto;
 using FinanceProject.EntityLayer.Concreate;
 using System.Threading.Tasks;
 
@@ -11,5 +11,7 @@ namespace FinanceProject.DataAccesLayer.Abstract
         Task<User> ValidateUserAsync(UserLoginDto userLoginDto);
 
         Task<int> GetTotalUserCount();
+
+        Task<IEnumerable<User>> GetAdminPagedUsersAsync(int page, int pageSize);
     }
 }

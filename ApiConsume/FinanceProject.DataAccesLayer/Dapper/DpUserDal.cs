@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using FinanceProject.DataAccesLayer.Abstract;
 using FinanceProject.DataAccesLayer.Repository;
-using FinanceProject.DtoLayer.Dtos.UserDto;
+using FinanceProject.ApplicationLayer.Dtos.UserDto;
 using FinanceProject.EntityLayer.Concreate;
 using System;
 using System.Data;
@@ -20,6 +20,26 @@ namespace FinanceProject.DataAccesLayer.Dapper
         {
             _connection = connection;
         }
+
+        public async Task<IEnumerable<User>> GetAdminPagedUsersAsync(int page, int pageSize)
+        {
+            var offset = (page - 1) * pageSize;
+
+            var sql = @"
+        SELECT ID, Email, FullName, Phone, Role
+        FROM Users
+        ORDER BY ID ASC
+        LIMIT @PageSize OFFSET @Offset";
+
+            var parameters = new
+            {
+                PageSize = pageSize,
+                Offset = offset
+            };
+
+            return await _connection.QueryAsync<User>(sql, parameters);
+        }
+
 
         public async Task RegisterAsync(UserRegisterDto userRegisterDto)
         {

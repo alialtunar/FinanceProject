@@ -1,4 +1,4 @@
-﻿using FinanceProject.DtoLayer.Dtos.TransactionHistoryDto;
+﻿using FinanceProject.ApplicationLayer.Dtos.TransactionHistoryDto;
 using FinanceProject.EntityLayer.Concreate;
 using System;
 using System.Collections.Generic;
@@ -19,5 +19,11 @@ namespace FinanceProject.DataAccesLayer.Abstract
         Task<IEnumerable<TransactionHistory>> GetPagedTransactionHistoryAsync(int accountId, int page, int pageSize);
 
         Task<decimal> GetTransactionVolumeLast24Hours();
+
+        Task<List<TransactionHistory>> GetLastFiveTransactionsAsync();
+
+        Task<IEnumerable<LastTransfersDto>> GetLast5TransfersUsersAsync();
+
+        Task<IEnumerable<TransactionHistory>> GetAdminPagedTransactionHistoryAsync(int page, int pageSize);
     }
 }

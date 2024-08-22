@@ -1,6 +1,5 @@
-"use client"
+"use client";
 import React, { useEffect, useState } from 'react';
-import Cookies from "universal-cookie";
 import { useAuth } from '../../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
 
@@ -21,9 +20,14 @@ const DepositePage = () => {
     }
   }, [auth]);
 
-  const handleDepositeRequest = async () => {
+  const handleDepositRequest = async () => {
     if (!auth || !auth.nameid) {
       alert("User is not authenticated or does not have a userId");
+      return;
+    }
+
+    if (isNaN(amount) || parseFloat(amount) <= 0) {
+      setError('Please enter a valid amount.');
       return;
     }
 
@@ -54,6 +58,11 @@ const DepositePage = () => {
   };
 
   const handleVerifyCode = async () => {
+    if (!code) {
+      setError('Please enter the verification code.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setStatus('');
@@ -67,13 +76,11 @@ const DepositePage = () => {
         body: JSON.stringify({ userId: auth.nameid, code, amount: parseFloat(amount) }),
       });
       const data = await response.json();
-      console.log('API Yanıtı:', data);
       if (response.ok) {
         setStatus(data.message);
-        setTimeout(()=>{
+        setTimeout(() => {
           router.push('/user');
-        },[2000])
-        
+        }, 2000);
       } else {
         setError(data.message || 'Bir hata oluştu.');
       }
@@ -98,16 +105,18 @@ const DepositePage = () => {
                   className="mb-3 block text-sm font-medium text-black dark:text-white"
                   htmlFor="amount"
                 >
-                  Amount
+                  Miktar
                 </label>
                 <input
                   className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
-                  type="text"
+                  type="number"
                   name="amount"
                   id="amount"
                   placeholder="Yatırılacak miktar"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
+                  min="0"
+                  step="any"
                 />
               </div>
             </div>
@@ -118,7 +127,7 @@ const DepositePage = () => {
                   className="mb-3 block text-sm font-medium text-black dark:text-white"
                   htmlFor="verificationCode"
                 >
-                  Verification Code
+                  Doğrulama Kodu
                 </label>
                 <input
                   className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
@@ -140,7 +149,7 @@ const DepositePage = () => {
                 <button
                   className="flex justify-center rounded bg-primary px-6 py-2 font-medium text-gray hover:bg-opacity-90"
                   type="button"
-                  onClick={handleDepositeRequest}
+                  onClick={handleDepositRequest}
                   disabled={loading}
                 >
                   {loading ? 'Yükleniyor...' : 'İstek Yap'}
@@ -163,4 +172,5 @@ const DepositePage = () => {
     </div>
   );
 };
-export default DepositePage
+
+export default DepositePage;

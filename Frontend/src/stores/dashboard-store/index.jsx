@@ -10,7 +10,11 @@ export const fetchTransactionVolumeLast24Hours = createAsyncThunk(
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
-    return response.json();
+    const data = await response.json();
+    if (!data.isSuccess) {
+      throw new Error(data.errorMessages.join(', '));
+    }
+    return data.result;
   }
 );
 
@@ -21,7 +25,11 @@ export const fetchAccountDetails = createAsyncThunk(
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
-    return response.json();
+    const data = await response.json();
+    if (!data.isSuccess) {
+      throw new Error(data.errorMessages.join(', '));
+    }
+    return data.result;
   }
 );
 
@@ -32,12 +40,16 @@ export const fetchLast5Transaction = createAsyncThunk(
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
-    return response.json();
+    const data = await response.json();
+    if (!data.isSuccess) {
+      throw new Error(data.errorMessages.join(', '));
+    }
+    return data.result;
   }
 );
 
 // Slice
-export const {reducer,actions} = createSlice({
+export const dashboardSlice = createSlice({
   name: 'dashboard',
   initialState: {
     transactionVolume: null,
@@ -55,6 +67,7 @@ export const {reducer,actions} = createSlice({
       .addCase(fetchTransactionVolumeLast24Hours.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.transactionVolume = action.payload;
+        state.error = null;
       })
       .addCase(fetchTransactionVolumeLast24Hours.rejected, (state, action) => {
         state.status = 'failed';
@@ -66,6 +79,7 @@ export const {reducer,actions} = createSlice({
       .addCase(fetchAccountDetails.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.accountDetails = action.payload;
+        state.error = null;
       })
       .addCase(fetchAccountDetails.rejected, (state, action) => {
         state.status = 'failed';
@@ -77,6 +91,7 @@ export const {reducer,actions} = createSlice({
       .addCase(fetchLast5Transaction.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.last5Transactions = action.payload;
+        state.error = null;
       })
       .addCase(fetchLast5Transaction.rejected, (state, action) => {
         state.status = 'failed';
@@ -85,3 +100,4 @@ export const {reducer,actions} = createSlice({
   }
 });
 
+export const { reducer, actions } = dashboardSlice;

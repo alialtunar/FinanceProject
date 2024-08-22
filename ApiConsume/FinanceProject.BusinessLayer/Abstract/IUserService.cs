@@ -1,16 +1,37 @@
-﻿using FinanceProject.DtoLayer.Dtos.UserDto;
+﻿using FinanceProject.Application.Models;
+using FinanceProject.ApplicationLayer.Dtos.UserDto;
+using FinanceProject.ApplicationLayer.Exceptions;
 using FinanceProject.EntityLayer.Concreate;
+using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 
 namespace FinanceProject.BusinessLayer.Abstract
 {
-    public interface IUserService : IGenericService<User>
+    public interface IUserService 
     {
-        Task TRegisterAsync(UserRegisterDto userRegisterDto);
+        Task<BaseResponse> TRegisterAsync(UserRegisterDto userRegisterDto);
 
-        Task<User> TLoginAsync(UserLoginDto userLoginDto);
+        Task<BaseResponse> TLoginAsync(UserLoginDto userLoginDto);
 
-        Task<int> TGetTotalUserCount();
+        Task<BaseResponse> TGetTotalUserCount();
+
+        Task<BaseResponse> TGetAdminPagedUsersAsync(int page, int pageSize);
+
+         Task<BaseResponse> TDeleteAsync(int id);
+
+
+        Task<BaseResponse> TGetAllAsync();
+
+
+
+        Task<BaseResponse> TGetByIdAsync(int id);
+
+
+        Task<BaseResponse> TInsertAsync(User entity);
+
+
+        Task<BaseResponse> TUpdateAsync(User entity);
+       
 
     }
 }
